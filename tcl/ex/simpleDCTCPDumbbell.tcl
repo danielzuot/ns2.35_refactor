@@ -19,6 +19,8 @@ Agent/TCP/FullTcp set segsize_ $packetSize
 set sourceAlg DropTail
 source configs/dctcp-defaults.tcl
 
+$ns namtrace-all [open "out.nam" w]
+
 # Procedure to attach classifier to queues
 # for nodes n1 and n2
 proc attach-classifiers {ns n1 n2} {
@@ -55,7 +57,7 @@ for {set i 0} {$i < $N} {incr i} {
         attach-classifiers $ns $n($i) $tor_node
     }
     set traceSamplingInterval 0.0001
-    set queue_fh [open "/dev/null" w]
+    set queue_fh [open "test.q" w]
     set qmon($i) [$ns monitor-queue $tor_node $n($i) $queue_fh $traceSamplingInterval]
 }
 
@@ -90,14 +92,17 @@ for {set i 0} {$i < $N} {incr i} {
 
 ### Cleanup procedure ###
 proc finish {} {
-        global ns queue_fh
-        $ns flush-trace
-	close $queue_fh
+  #global ns queue_fh
+  #$ns flush-trace
+	#close $queue_fh
+  puts "running nam..."
+  exec nam -f dynamic-nam.conf out.nam &
 	exit 0
 }
 
 ### Measure throughput ###
 proc startMeasurement {} {
+  puts "starting measurement"
   global qmon startByteCount N
   for {set i 0} {$i < $N} {incr i} {
     set startByteCount($i) [$qmon($i) set bdepartures_]
