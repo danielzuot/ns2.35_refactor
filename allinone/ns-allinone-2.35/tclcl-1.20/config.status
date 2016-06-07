@@ -543,17 +543,17 @@ S["V_CCOPT"]=" -Wall -Wno-write-strings -Wno-parentheses"
 S["V_ALL"]="libtclcl.a"
 S["V_LIB_TK"]="-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltk8.5"
 S["V_LIB_TCL"]="-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltcl8.5"
-S["V_LIB_OTCL"]="-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/otcl-1.14 -lotcl"
+S["V_LIB_OTCL"]="-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/otcl -lotcl"
 S["V_LIB_TCLCL"]=""
 S["V_TAR_TARGET"]="darwin14.5.0"
 S["V_STATIC"]=""
 S["V_DEFINES"]="-DHAVE_LIBZ1_1_3 -DHAVE_ZLIB_H -DHAVE_LIBOTCL1_14 -DHAVE_OTCL_H -DHAVE_LIBTK8_5 -DHAVE_TK_H -DHAVE_LIBTCL8_5 -DHAVE_TCLINT_H -DHAVE_TCL_H "
-S["V_LIBS"]="-L/usr/lib -lz -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/otcl-1.14 -lotcl -L/Users/danielzuo/D"\
-"ocuments/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltk8.5 -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter"\
-"-refactor/allinone/ns-allinone-2.35/lib -ltcl8.5"
-S["V_INCLUDES"]="-I/usr/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/otcl-1.14 -I/Users/danielzuo/Document"\
-"s/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/a"\
-"llinone/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include"
+S["V_LIBS"]="-L/usr/lib -lz -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/otcl -lotcl -L/Users/danielzuo/Docume"\
+"nts/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltk8.5 -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refa"\
+"ctor/allinone/ns-allinone-2.35/lib -ltcl8.5"
+S["V_INCLUDES"]="-I/usr/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/otcl -I/Users/danielzuo/Documents/uro"\
+"p/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allino"\
+"ne/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include"
 S["V_LIB_X11"]="-L/usr/X11R6/lib -lXext -lX11"
 S["V_INCLUDE_X11"]="-I/usr/X11R6/include"
 S["V_LIBRARY_TK"]="../lib/tk8.5"

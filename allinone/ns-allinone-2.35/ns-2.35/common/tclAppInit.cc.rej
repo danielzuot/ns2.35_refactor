@@ -1,0 +1,17 @@
+***************
+*** 237,243 ****
+  Tcl_AppInit(Tcl_Interp *interp)
+  {
+  #ifdef MEMDEBUG_SIMULATIONS
+-         extern MemTrace *globalMemTrace;
+          globalMemTrace = new MemTrace;
+  #endif
+  
+--- 237,243 ----
+  Tcl_AppInit(Tcl_Interp *interp)
+  {
+  #ifdef MEMDEBUG_SIMULATIONS
++         
+          globalMemTrace = new MemTrace;
+  #endif
+  

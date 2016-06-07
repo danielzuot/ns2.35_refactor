@@ -32,9 +32,9 @@ proc checkout_executable {exe_var best alternate text} {
 #
 # Keep track of where the good perl is.
 #
-checkout_executable PERL "/usr/bin/perl" perl "\
+checkout_executable PERL "/Users/danielzuo/perl5/perlbrew/perls/perl-5.16.0/bin/perl" perl "\
 	When configured, ns found the right version of perl in\
-	/usr/bin/perl
+	/Users/danielzuo/perl5/perlbrew/perls/perl-5.16.0/bin/perl
 	but it doesn't seem to be there anymore, so\
 	ns will fall back on running the first perl in your path.\
 	The wrong version of perl may break the test suites.\

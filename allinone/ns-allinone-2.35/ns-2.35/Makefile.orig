@@ -48,7 +48,7 @@ LN	= ln
 TEST	= test
 RM	= rm -f
 MV      = mv
-PERL	= /usr/bin/perl
+PERL	= /Users/danielzuo/perl5/perlbrew/perls/perl-5.16.0/bin/perl
 
 # for diffusion
 #DIFF_INCLUDES = "./diffusion3/main ./diffusion3/lib ./diffusion3/nr ./diffusion3/ns"

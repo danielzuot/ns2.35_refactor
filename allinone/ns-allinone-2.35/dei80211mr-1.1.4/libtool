@@ -44,7 +44,7 @@ available_tags=" CXX"
 
 # ### BEGIN LIBTOOL CONFIG
 
-# Libtool was configured on host 31-35-123.wireless.csail.mit.edu:
+# Libtool was configured on host dhcp-18-111-78-192.dyn.mit.edu:
 
 # Shell to use when invoking shell scripts.
 SHELL="/bin/sh"
@@ -7279,7 +7279,7 @@ disable_libs=static
 # End:
 # ### BEGIN LIBTOOL TAG CONFIG: CXX
 
-# Libtool was configured on host 31-35-123.wireless.csail.mit.edu:
+# Libtool was configured on host dhcp-18-111-78-192.dyn.mit.edu:
 
 # Shell to use when invoking shell scripts.
 SHELL="/bin/sh"
