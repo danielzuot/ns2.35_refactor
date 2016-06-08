@@ -1,17 +1,27 @@
 set ns [new Simulator]
 
-set enable_pause 0
+# PARAMETERS
+set enable_pause 1
+set enableNAM 0
+set mytracefile [open traces/mytracefile.tr w]
+set throughputfile [open traces/thrfile.tr w]
+set traceSamplingInterval 0.0001  
+set throughputSamplingInterval 0.01
 set K 5
 set RTT 0.0005
-set simulationTime 1.0
+set inputLineRate 1Gbs
+set simulationTime 2.0
 set startMeasurementTime 0.001
 set stopMeasurementTime 1
-set flowClassifyTime 0.001
-set burstStartTime 0.4
-set burstInterval 0.1
-set burstSize 10000
+set classifyDelay 0.01
+set throughputTraceStart 0.01
+set f0Start 0.001
+set f1Start 0.1
+set f2Start 0.6
+set burstInterval 0.2
+set burstSize 1000
 
-assert [expr $simulationTime < 1.5]
+# assert [expr $simulationTime < 1.5]
 # Sequence number wraps around otherwise
 
 ##### Transport defaults, like packet size ######
@@ -28,11 +38,10 @@ Agent/TCP set ecn_ 1
 Agent/TCP set old_ecn_ 1
 Agent/TCP set packetSize_ $packetSize
 Agent/TCP/FullTcp set segsize_ $packetSize
-Agent/TCP set window_ 1256
+Agent/TCP set window_ 256
 Agent/TCP set tcpTick_ 0.01
 Agent/TCP set minrto_ 0.2 ; # minRTO = 200ms
 Agent/TCP set windowOption_ 0
-
 
 if {[string compare $sourceAlg "DC-TCP-Sack"] == 0} {
     Agent/TCP set dctcp_ true
@@ -41,8 +50,6 @@ if {[string compare $sourceAlg "DC-TCP-Sack"] == 0} {
 Agent/TCP/FullTcp set segsperack_ $ackRatio; 
 Agent/TCP/FullTcp set spa_thresh_ 3000;
 Agent/TCP/FullTcp set interval_ 0.04 ; #delayed ACK interval = 40ms
-
-#Queue set limit_ 1000
 
 Queue/RED set bytes_ false
 Queue/RED set queue_in_bytes_ true
@@ -62,23 +69,13 @@ if {$enable_pause == 1} {
     Queue set limit_ 10000000
 } else {
     puts "Pause disabled"
-    Queue set limit_ 100
+    Queue set limit_ 20
 }
 
 ## Tracing Parameters ##
 $ns color 0 Red
-$ns color 1 Orange
-$ns color 2 Yellow
-$ns color 3 Green
-$ns color 4 Blue
-$ns color 5 Violet
-$ns color 6 Brown
-$ns color 7 Black
-set enableNAM 1
-set mytracefile [open traces/mytracefile.tr w]
-set throughputfile [open traces/thrfile.tr w]
-set traceSamplingInterval 0.0001
-set throughputSamplingInterval 0.01
+$ns color 1 Blue
+$ns color 2 Green
 if {$enableNAM != 0} {
     set namfile [open out.nam w]
     $ns namtrace-all $namfile
@@ -105,7 +102,7 @@ proc attach-classifiers {ns n1 n2} {
 #           /        \ 
 #         4            5   
 #
-set inputLineRate 10Gb
+
 set N 6
 for {set i 0} {$i < $N} {incr i} {
     set n($i) [$ns node]
@@ -117,8 +114,7 @@ set nsink [$ns node]
 # first the main link
 $ns duplex-link $nsource $nsink $inputLineRate [expr $RTT/8] RED
 $ns duplex-link-op $nsource $nsink queuePos 0.25
-set qfile [$ns monitor-queue $nsource $nsink [open traces/queue.tr w] $traceSamplingInterval]
-$ns duplex-link-op $nsource $nsink color "green"
+set qmon [$ns monitor-queue $nsource $nsink [open traces/queue.tr w] $traceSamplingInterval]
 
 for {set i 0} {$i < $N} {incr i} {
     if {$i % 2 == 0} {
@@ -138,10 +134,6 @@ for {set i 0} {$i < $N} {incr i} {
     }
 }
 
- set traceSamplingInterval 0.001
-# set queue_fh [open "/dev/null" w]
-# set qmon($i) [$ns monitor-queue $tor_node $n($i) $queue_fh $traceSamplingInterval]
-
 # create tcp connections: 0->1, 2->3, 4->5
 for {set i 0} {$i < 3} {incr i} {
   set tcp($i) [new Agent/TCP/FullTcp/Sack]
@@ -153,8 +145,7 @@ for {set i 0} {$i < 3} {incr i} {
   $sink($i) listen
 
   $ns connect $tcp($i) $sink($i)
-  $tcp($i) set _fid $i
-  $sink($i) set _fid $i
+  $tcp($i) set fid_ $i
 }
 
 #### Application: long-running FTP #####
@@ -164,29 +155,25 @@ for {set i 0} {$i < 3} {incr i} {
 }
 
 # send a flow from 0 -> 1
-$ns at 0.0 "$ftp(0) start"
+$ns at $f0Start "$ftp(0) start"
+$ns at [expr $f0Start+$classifyDelay] "classifyFlow 0"
 $ns at [expr $simulationTime] "$ftp(0) stop"
 
 # send a flow from 2 -> 3
-$ns at 0.1 "$ftp(1) start"
+$ns at $f1Start "$ftp(1) start"
+$ns at [expr $f1Start+$classifyDelay] "classifyFlow 1"
 $ns at [expr $simulationTime] "$ftp(1) stop"
 
 # send a delayed, bursty flow from 4 -> 5
-$ns at $burstStartTime "$ftp(2) produce $burstSize"
-$ns at $burstStartTime "sendBursts"
+$ns at $f2Start "$ftp(2) produce $burstSize"
+$ns at [expr $f2Start+$classifyDelay] "classifyFlow 2"
+$ns at [expr $f2Start+$burstInterval] "sendBursts"
 $ns at [expr $simulationTime] "$ftp(2) stop"
 
 set flowmon [$ns makeflowmon Fid]
 set MainLink [$ns link $nsource $nsink]
-
 $ns attach-fmon $MainLink $flowmon
-
 set fcl [$flowmon classifier]
-
-# $ns at $flowClassifyTime "classifyFlows"
-
-$ns at $traceSamplingInterval "myTrace $mytracefile"
-# $ns at $throughputSamplingInterval "throughputTrace $throughputfile"
 
 ### procedures ###
 proc sendBursts {} {
@@ -210,65 +197,57 @@ proc finish {} {
 }
 
 proc myTrace {file} {
-    global ns N traceSamplingInterval tcp qfile
+    global ns N traceSamplingInterval tcp qmon
     
     set now [$ns now]
     
     for {set i 0} {$i < 3} {incr i} {
-    set cwnd($i) [$tcp($i) set cwnd_]
-    set dctcp_alpha($i) [$tcp($i) set dctcp_alpha_]
+      set cwnd($i) [$tcp($i) set cwnd_]
+      set dctcp_alpha($i) [$tcp($i) set dctcp_alpha_]
     }
     
-    $qfile instvar parrivals_ pdepartures_ pdrops_ bdepartures_
+    $qmon instvar parrivals_ pdepartures_ pdrops_ bdepartures_
   
-    puts -nonewline $file "$now $cwnd(0)"
-    for {set i 1} {$i < 3} {incr i} {
-    puts -nonewline $file " $cwnd($i)"
+    puts -nonewline $file "$now"
+    for {set i 0} {$i < 3} {incr i} {
+      puts -nonewline $file " $cwnd($i)"
     }
     for {set i 0} {$i < 3} {incr i} {
-    puts -nonewline $file " $dctcp_alpha($i)"
+      puts -nonewline $file " $dctcp_alpha($i)"
     }
- 
+
     puts -nonewline $file " [expr $parrivals_-$pdepartures_-$pdrops_]"    
     puts $file " $pdrops_"
      
     $ns at [expr $now+$traceSamplingInterval] "myTrace $file"
 }
 
-proc classifyFlows {} {
-    global N fcl flowstats
-    puts "NOW CLASSIFYING FLOWS"
-    for {set i 0} {$i < 3} {incr i} {
-    set flowstats($i) [$fcl lookup autp 0 0 $i]
-    }
+proc classifyFlow {fid} {
+    global fcl flowstats classifyInterval
+    set flowstats($fid) [$fcl lookup auto 0 0 $fid]
+    puts "$fid $flowstats($fid)"
 }
 
 proc throughputTrace {file} {
-    global ns throughputSamplingInterval qfile flowstats flowClassifyTime
+    global ns throughputSamplingInterval qmon flowstats flowClassifyTime
     
     set now [$ns now]
     
-    $qfile instvar bdepartures_
+    $qmon instvar bdepartures_
     
-    puts -nonewline $file "$now [expr $bdepartures_*8/$throughputSamplingInterval/1000000]"
+    puts -nonewline $file "$now [expr ($bdepartures_/$throughputSamplingInterval)/1000000]"
     set bdepartures_ 0
-    if {$now <= $flowClassifyTime} {
-    for {set i 0} {$i < [expr $N-1]} {incr i} {
+    for {set i 0} {$i < 3} {incr i} {
+      if {[info exists flowstats($i)] == 0} {
         puts -nonewline $file " 0"
-    }
-    puts $file " 0"
-    }
-
-    if {$now > $flowClassifyTime} { 
-      for {set i 0} {$i < 2} {incr i} {
-          $flowstats($i) instvar barrivals_
-          puts -nonewline $file " [expr $barrivals_*8/$throughputSamplingInterval/1000000]"
-          set barrivals_ 0
+      } else {
+        $flowstats($i) instvar barrivals_
+        puts -nonewline $file " [expr ($barrivals_/$throughputSamplingInterval)/1000000]"
+        set barrivals_ 0
       }
-      $flowstats(2) instvar barrivals_
-      puts $file " [expr $barrivals_*8/$throughputSamplingInterval/1000000]"
-      set barrivals_ 0
     }
+    puts $file ""
+
     $ns at [expr $now+$throughputSamplingInterval] "throughputTrace $file"
 }
 
@@ -276,22 +255,24 @@ set startPacketCount 0
 set stopPacketCount 0
 
 proc startMeasurement {} {
-global qfile startPacketCount
-$qfile instvar pdepartures_   
-set startPacketCount $pdepartures_
+  global qmon startPacketCount
+  $qmon instvar pdepartures_   
+  set startPacketCount $pdepartures_
 }
 
 proc stopMeasurement {} {
-global qfile startPacketCount stopPacketCount packetSize startMeasurementTime stopMeasurementTime simulationTime
-$qfile instvar pdepartures_   
-set stopPacketCount $pdepartures_
-puts "Throughput = [expr ($stopPacketCount-$startPacketCount)/(1024.0*1024*($stopMeasurementTime-$startMeasurementTime))*$packetSize*8] Mbps"
+  global qmon startPacketCount stopPacketCount packetSize startMeasurementTime stopMeasurementTime simulationTime
+  $qmon instvar pdepartures_   
+  set stopPacketCount $pdepartures_
+  puts "Throughput = [expr ($stopPacketCount-$startPacketCount)/(1024.0*1024*($stopMeasurementTime-$startMeasurementTime))*$packetSize*8] Mbps"
 }
 
 #set the random seed for consistent results
 ns-random 0
-$ns at $startMeasurementTime "startMeasurement"
-$ns at $stopMeasurementTime "stopMeasurement"
+# $ns at $startMeasurementTime "startMeasurement"
+# $ns at $stopMeasurementTime "stopMeasurement"
+$ns at $traceSamplingInterval "myTrace $mytracefile"
+$ns at $throughputTraceStart "throughputTrace $throughputfile"
 $ns at $simulationTime "finish"
 
 $ns run
