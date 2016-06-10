@@ -1,7 +1,7 @@
 set ns [new Simulator]
 
 # PARAMETERS
-set enable_pause 1
+set enable_pause 0
 set enableNAM 0
 set mytracefile [open traces/mytracefile.tr w]
 set throughputfile [open traces/thrfile.tr w]
@@ -9,7 +9,7 @@ set traceSamplingInterval 0.0001
 set throughputSamplingInterval 0.01
 set K 5
 set RTT 0.0005
-set inputLineRate 1Gbs
+set inputLineRate 10Gbs
 set simulationTime 2.0
 set startMeasurementTime 0.001
 set stopMeasurementTime 1
@@ -69,7 +69,7 @@ if {$enable_pause == 1} {
     Queue set limit_ 10000000
 } else {
     puts "Pause disabled"
-    Queue set limit_ 20
+    Queue set limit_ 1000
 }
 
 ## Tracing Parameters ##
