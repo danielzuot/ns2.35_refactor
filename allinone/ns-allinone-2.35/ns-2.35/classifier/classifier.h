@@ -85,6 +85,7 @@ protected:
 	int offset_;		// offset for Packet::access()
 	int shift_;
 	int mask_;
+	int32_t node_id_;
 	NsObject *default_target_;
 	int nsize_;       //what size of nslot_ should be
 };
