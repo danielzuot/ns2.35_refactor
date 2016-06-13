@@ -180,6 +180,7 @@ public:
 	virtual void do_install(char *dst, NsObject *target);
 	void recv(Packet* p, Handler* h) override;
 	void deque_callback(Packet* p);
+	enum class PauseAction { PAUSE, RESUME };
 protected:
 	std::map<int32_t, uint64_t> input_counters_;
 	std::map<int32_t, bool> paused_;
@@ -201,7 +202,7 @@ protected:
 		}
 	}
 private:
-	Packet* generate_pause_pkt(const int32_t port_to_pause, const uint16_t);
+	Packet* generate_pause_pkt(const int32_t port_to_pause, const PauseAction action);
 	NsObject* find_dst(const int32_t dst);
 	bool is_paused(const int32_t port);
 };
