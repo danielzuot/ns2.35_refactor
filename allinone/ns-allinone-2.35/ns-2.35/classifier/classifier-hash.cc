@@ -105,10 +105,13 @@ bool DestHashClassifier::is_paused(const int32_t port) {
 }
 
 Packet* DestHashClassifier::generate_pause_pkt(const int32_t port_to_pause, const PauseAction action) {
-	Packet* pause_pkt = Packet::aloc();
+	Packet* pause_pkt = Packet::alloc();
 	uint16_t pause = (action == PauseAction::PAUSE) ? 1 : 0;
-	hdr_pause::fill_in(pause_pkt, {pause, pause, pause, pause, pause, pause, pause, pause},
-		{true, true, true, true, true, true, true, true});
+	uint16_t pause_durations_array[8] = {pause, pause, pause, pause, pause, pause, pause, pause};
+	bool enable_array[8] = {true, true, true, true, true, true, true, true};
+	std::vector<uint16_t> pause_durations_vector(&pause_durations_array[0], &pause_durations_array[0]+8);
+	std::vector<bool> enable_vector(&enable_array[0], &enable_array[0]+8);
+	hdr_pause::fill_in(pause_pkt, pause_durations_vector, enable_vector);
 	hdr_ip::access(pause_pkt)->saddr() = node_id_;
 	hdr_ip::access(pause_pkt)->daddr() = port_to_pause;
 	assert(hdr_ip::access(pause_pkt)->saddr() != hdr_ip::access(pause_pkt)->daddr());
@@ -183,9 +186,11 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 			if (input_port != -1) {
 				auto pause_pkt = generate_pause_pkt(input_port, PauseAction::PAUSE);
 				/* No point sending a pause to an agent */
-				printf("Pausing at %f from %d to %d\n",
+				printf("Pausing at %f from %d to %d because input_counters_[input_port] = %d, with input_port = %d\n",
 					Scheduler::instance().clock(),
 					node_id_,
+					input_port,
+					input_counters_[input_port],
 					input_port);
 				int slot = lookup(pause_pkt);
 				slot_[slot]->recv(pause_pkt);

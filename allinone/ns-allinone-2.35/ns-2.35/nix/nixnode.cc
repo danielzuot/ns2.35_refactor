@@ -156,8 +156,8 @@ Edge* pE;
   if (last.first == NODE_NONE)
     {
       prev = m_Adj.begin();
-      if (prev == (EdgeVec_it) NULL) // ! How can this happen?
-        return(NodeWeight_t(NODE_NONE, 0));
+      // if (prev == (EdgeVec_it) NULL) // ! How can this happen?
+      //   return(NodeWeight_t(NODE_NONE, 0));
       pE = *prev;
       if(0)printf("NextAdj returning first edge %ld\n",
              pE->m_n);

@@ -1,8 +1,8 @@
 set ns [new Simulator]
 
 # PARAMETERS
-set enable_pause 0
-set enableNAM 0
+set enable_pause 1
+set enableNAM 1
 set mytracefile [open traces/mytracefile.tr w]
 set throughputfile [open traces/thrfile.tr w]
 set traceSamplingInterval 0.0001  
