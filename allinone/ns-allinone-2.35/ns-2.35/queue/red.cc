@@ -1,4 +1,4 @@
- /* -*-	Mode:C++; c-basic-offset:8; tab-width:8; indent-tabs-mode:t -*- */
+/* -*-	Mode:C++; c-basic-offset:8; tab-width:8; indent-tabs-mode:t -*- */
 /*
  * Copyright (c) 1990-1997 Regents of the University of California.
  * All rights reserved.
@@ -426,8 +426,8 @@ Packet* REDQueue::deque()
 		else
 			idletime_ = 0.0;
 	}
-	auto ret = p;
-	if (classifier_ != nullptr) classifier_->deque_callback(ret);
+	// auto ret = p;
+	// if (classifier_ != nullptr) classifier_->deque_callback(ret);
 	return (p);
 }
 

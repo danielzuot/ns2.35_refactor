@@ -133,7 +133,6 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 	if (enable_pause_ == 0) {
 		return HashClassifier::recv(p, h); /* one level up the hierarchy */
 	}
-
 	NsObject* node = find(p);
 	assert(node != NULL);
 
@@ -180,6 +179,10 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 	} else {
 		/* Input accounting for pause */
 		const int32_t input_port = hdr_cmn::access(p)->input_port();
+		printf("input counter[%d] is now: %d, and is_paused=%d\n",
+			input_port,
+			input_counters_[input_port]+1,
+			is_paused(input_port));
 		input_counters_[input_port]++;
 		if (input_counters_[input_port] > 1000 and
 			(not is_paused(input_port))) {
