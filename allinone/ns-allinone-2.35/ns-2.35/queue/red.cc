@@ -426,6 +426,8 @@ Packet* REDQueue::deque()
 		else
 			idletime_ = 0.0;
 	}
+	auto ret = p;
+	if (classifier_ != nullptr) classifier_->deque_callback(ret);
 	return (p);
 }
 
