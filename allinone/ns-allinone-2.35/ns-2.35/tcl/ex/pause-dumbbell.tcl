@@ -17,9 +17,9 @@ set classifyDelay 0.01
 set throughputTraceStart 0.01
 set f0Start 0.001
 set f1Start 0.1
-set f2Start 0.6
-set burstInterval 0.2
-set burstSize 1000
+set f2Start 0.5
+set burstInterval 0.075
+set burstSize 5000
 
 assert [expr $simulationTime <= 1.5]
 # Sequence number wraps around otherwise
@@ -115,6 +115,9 @@ set nsink [$ns node]
 $ns duplex-link $nsource $nsink $inputLineRate [expr $RTT/8] RED
 $ns duplex-link-op $nsource $nsink queuePos 0.25
 set qmon [$ns monitor-queue $nsource $nsink [open traces/queue.tr w] $traceSamplingInterval]
+if {$enable_pause == 1} {
+  attach-classifiers $ns $nsource $nsink
+}
 
 for {set i 0} {$i < $N} {incr i} {
     if {$i % 2 == 0} {

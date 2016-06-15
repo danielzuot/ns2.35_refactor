@@ -74,12 +74,12 @@ void DestHashClassifier::deque_callback(Packet* p) {
 			input_counters_.at(input_port)--;
 
 			/* Resume logic */
-			printf("%f: \tat %d, checking for unpause:\n\tis_paused=%d\n\tinput_counters[%d]=%d\n",
-				Scheduler::instance().clock(),
-				node_id_,
-				is_paused(input_port),
-				input_port,
-				input_counters_.at(input_port));
+			// printf("%f: \tat %d, checking for unpause:\n\tis_paused=%d\n\tinput_counters[%d]=%d\n",
+			// 	Scheduler::instance().clock(),
+			// 	node_id_,
+			// 	is_paused(input_port),
+			// 	input_port,
+			// 	input_counters_.at(input_port));
 			if (input_counters_.at(input_port) < 5 and
 				is_paused(input_port)) {
 				if (input_port != -1) {
@@ -87,10 +87,10 @@ void DestHashClassifier::deque_callback(Packet* p) {
 					/* no point sending a pause to an agent */
 					int slot = lookup(unpause_pkt);
 					slot_[slot]->recv(unpause_pkt);
-					printf("unpausing at %f from %d to %d",
-						Scheduler::instance().clock(),
-						node_id_,
-						input_port);
+					// printf("unpausing at %f from %d to %d",
+					// 	Scheduler::instance().clock(),
+					// 	node_id_,
+					// 	input_port);
 					paused_.at(input_port) = false;
 				}
 			}
@@ -185,25 +185,25 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 	} else {
 		/* Input accounting for pause */
 		const int32_t input_port = hdr_cmn::access(p)->input_port();
-		printf("%f: \treceived a packet at %d from %d, input counter[%d] is now: %d, and is_paused=%d\n",
-			Scheduler::instance().clock(),
-			node_id_,
-			input_port,
-			input_port,
-			input_counters_[input_port]+1,
-			is_paused(input_port));
+		// printf("%f: \treceived a packet at %d from %d, input counter[%d] is now: %d, and is_paused=%d\n",
+		// 	Scheduler::instance().clock(),
+		// 	node_id_,
+		// 	input_port,
+		// 	input_port,
+		// 	input_counters_[input_port]+1,
+		// 	is_paused(input_port));
 		input_counters_[input_port]++;
-		if (input_counters_[input_port] > 1000 and
+		if (input_counters_[input_port] > 5 and
 			(not is_paused(input_port))) {
 			if (input_port != -1) {
 				auto pause_pkt = generate_pause_pkt(input_port, PauseAction::PAUSE);
 				/* No point sending a pause to an agent */
-				printf("Pausing at %f from %d to %d because input_counters_[input_port] = %d, with input_port = %d\n",
-					Scheduler::instance().clock(),
-					node_id_,
-					input_port,
-					input_counters_[input_port],
-					input_port);
+				// printf("Pausing at %f from %d to %d because input_counters_[input_port] = %d, with input_port = %d\n",
+				// 	Scheduler::instance().clock(),
+				// 	node_id_,
+				// 	input_port,
+				// 	input_counters_[input_port],
+				// 	input_port);
 				int slot = lookup(pause_pkt);
 				slot_[slot]->recv(pause_pkt);
 				paused_[input_port] = true;
