@@ -10,7 +10,7 @@ set throughputSamplingInterval 0.01
 set K 5
 set RTT 0.0005
 set inputLineRate 10Gbs
-set simulationTime 2.0
+set simulationTime 1.5
 set startMeasurementTime 0.001
 set stopMeasurementTime 1
 set classifyDelay 0.01
@@ -21,7 +21,7 @@ set f2Start 0.6
 set burstInterval 0.2
 set burstSize 1000
 
-# assert [expr $simulationTime < 1.5]
+assert [expr $simulationTime <= 1.5]
 # Sequence number wraps around otherwise
 
 ##### Transport defaults, like packet size ######

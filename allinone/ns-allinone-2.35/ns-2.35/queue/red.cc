@@ -68,6 +68,7 @@ static const char rcsid[] =
 #include "flags.h"
 #include "delay.h"
 #include "red.h"
+#include "classifier-hash.h"
 
 static class REDClass : public TclClass {
 public:
@@ -426,8 +427,7 @@ Packet* REDQueue::deque()
 		else
 			idletime_ = 0.0;
 	}
-	// auto ret = p;
-	// if (classifier_ != nullptr) classifier_->deque_callback(ret);
+	if (classifier_ != nullptr) classifier_->deque_callback(p);
 	return (p);
 }
 

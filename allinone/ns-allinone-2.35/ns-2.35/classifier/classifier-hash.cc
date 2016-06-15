@@ -74,6 +74,12 @@ void DestHashClassifier::deque_callback(Packet* p) {
 			input_counters_.at(input_port)--;
 
 			/* Resume logic */
+			printf("%f: \tat %d, checking for unpause:\n\tis_paused=%d\n\tinput_counters[%d]=%d\n",
+				Scheduler::instance().clock(),
+				node_id_,
+				is_paused(input_port),
+				input_port,
+				input_counters_.at(input_port));
 			if (input_counters_.at(input_port) < 5 and
 				is_paused(input_port)) {
 				if (input_port != -1) {
@@ -179,7 +185,10 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 	} else {
 		/* Input accounting for pause */
 		const int32_t input_port = hdr_cmn::access(p)->input_port();
-		printf("input counter[%d] is now: %d, and is_paused=%d\n",
+		printf("%f: \treceived a packet at %d from %d, input counter[%d] is now: %d, and is_paused=%d\n",
+			Scheduler::instance().clock(),
+			node_id_,
+			input_port,
 			input_port,
 			input_counters_[input_port]+1,
 			is_paused(input_port));
