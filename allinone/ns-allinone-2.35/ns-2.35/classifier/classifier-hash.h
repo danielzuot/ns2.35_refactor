@@ -172,6 +172,15 @@ protected:
 	}
 };
 
+class DestHashHandler : public Handler {
+public:
+	DestHashHandler(DestHashClassifier& dhc, int32_t input_port) : dhc_(dhc), input_port_(input_port) {}
+	void handle(Event*);
+private:
+	DestHashClassifier& dhc_;
+	int32_t input_port_;
+};
+
 class DestHashClassifier : public HashClassifier {
 public:
 	DestHashClassifier() : HashClassifier(TCL_ONE_WORD_KEYS), enable_pause_(0) { bind ("enable_pause_", &enable_pause_); }
@@ -183,6 +192,7 @@ public:
 	enum class PauseAction { PAUSE, RESUME };
 protected:
 	std::map<int32_t, uint64_t> input_counters_;
+	std::map<int32_t, DestHashHandler> pause_renewals_;
 	std::map<int32_t, bool> paused_;
 	const char* hashkey(nsaddr_t, nsaddr_t dst, int) {
 		long key = mshift(dst);

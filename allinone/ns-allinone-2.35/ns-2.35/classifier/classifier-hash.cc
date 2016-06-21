@@ -63,6 +63,23 @@ extern "C" {
 int pause_threshold = 100;
 
 /****************** HashClassifier Methods ************/
+void DestHashHandler::handle(Event* e) {
+	/* pause frame expired, check if need to renew and send another pause_pkt */
+	if (dhc_->input_counters_[input_port_] > pause_threshold and
+		(not is_paused(input_port_))) {
+		auto pause_pkt = dhc_->generate_pause_pkt(input_port_, PauseAction::PAUSE);
+		/* No point sending a pause to an agent */
+		int slot = dhc_->lookup(pause_pkt);
+		dhc_->slot_[slot]->recv(pause_pkt);
+		dhc_->paused_[input_port_] = true;
+		/* schedule the next pause renewal check */
+		Scheduler& s = Scheduler::instance();
+		Event* e = (Event*)pause_pkt;
+		s.schedule(dhc_->pause_renewals_[input_port_], e, hdr_pause::access(pause_pkt)->class_pause_durations_[0]);
+	}
+}
+
+
 void DestHashClassifier::deque_callback(Packet* p) {
 	if (p != nullptr) {
 		if (hdr_cmn::access(p)->ptype() == PT_PAUSE){
@@ -75,12 +92,6 @@ void DestHashClassifier::deque_callback(Packet* p) {
 			input_counters_.at(input_port)--;
 
 			/* Resume logic */
-			// printf("%f: \tat %d, checking for unpause:\n\tis_paused=%d\n\tinput_counters[%d]=%d\n",
-			// 	Scheduler::instance().clock(),
-			// 	node_id_,
-			// 	is_paused(input_port),
-			// 	input_port,
-			// 	input_counters_.at(input_port));
 			if (input_counters_.at(input_port) < 5 and
 				is_paused(input_port)) {
 				if (input_port != -1) {
@@ -88,10 +99,6 @@ void DestHashClassifier::deque_callback(Packet* p) {
 					/* no point sending a pause to an agent */
 					int slot = lookup(unpause_pkt);
 					slot_[slot]->recv(unpause_pkt);
-					// printf("unpausing at %f from %d to %d",
-					// 	Scheduler::instance().clock(),
-					// 	node_id_,
-					// 	input_port);
 					paused_.at(input_port) = false;
 				}
 			}
@@ -166,8 +173,14 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 
 			/* find the LinkDelay class */
 			/* Cancel timer that fires after existing packet delivery event */
+			Scheduler& s = Scheduler::instance();
 			auto link_to_pause = find_node_type<LinkDelay>(find_dst(src_addr));
-			Scheduler::instance().cancel(&link_to_pause->intr());
+			auto resume_event = &link_to_pause->intr();
+			s.cancel(resume_event);
+
+			/* dzuo: Reset unblock timer to fire after pause_delay has expired */
+			resume_event->time_ = s.clock() + hdr_pause::access(p)->class_pause_durations_[0];
+			s.insert(resume_event);
 
 			/* set queue to blocked */
 			auto queue_to_block = find_node_type<Queue>(find_dst(src_addr));
@@ -186,35 +199,29 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 	} else {
 		/* Input accounting for pause */
 		const int32_t input_port = hdr_cmn::access(p)->input_port();
-		// printf("%f: \treceived a packet at %d from %d, input counter[%d] is now: %d, and is_paused=%d\n",
-		// 	Scheduler::instance().clock(),
-		// 	node_id_,
-		// 	input_port,
-		// 	input_port,
-		// 	input_counters_[input_port]+1,
-		// 	is_paused(input_port));
 		input_counters_[input_port]++;
+		if (pause_renewals_.count(input_port) == 0 && input_port != -1) {
+			/* new input port, need to create and add handler */
+			pause_renewals_[input_port] = DestHashHandler(*this, input_port);
+		}
 		if (input_counters_[input_port] > pause_threshold and
 			(not is_paused(input_port))) {
 			if (input_port != -1) {
 				auto pause_pkt = generate_pause_pkt(input_port, PauseAction::PAUSE);
 				/* No point sending a pause to an agent */
-				// printf("Pausing at %f from %d to %d because input_counters_[input_port] = %d, with input_port = %d\n",
-				// 	Scheduler::instance().clock(),
-				// 	node_id_,
-				// 	input_port,
-				// 	input_counters_[input_port],
-				// 	input_port);
 				int slot = lookup(pause_pkt);
 				slot_[slot]->recv(pause_pkt);
 				paused_[input_port] = true;
+				/* schedule the pause renewal check */
+				Scheduler& s = Scheduler::instance();
+				Event* e = (Event*)pause_pkt;
+				s.schedule(pause_renewals_[input_port], e, hdr_pause::access(pause_pkt)->class_pause_durations_[0]);
 			}
 		}
 	}
 
 	/* Either way send it to node */
 	node->recv(p,h);
-
 }
 
 int HashClassifier::classify(Packet * p) {
