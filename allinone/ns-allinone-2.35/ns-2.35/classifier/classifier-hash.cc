@@ -60,6 +60,7 @@ extern "C" {
 #include "pause_header.h"
 #include "delay.h"
 #include "queue.h"
+int pause_threshold = 100;
 
 /****************** HashClassifier Methods ************/
 void DestHashClassifier::deque_callback(Packet* p) {
@@ -193,7 +194,7 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 		// 	input_counters_[input_port]+1,
 		// 	is_paused(input_port));
 		input_counters_[input_port]++;
-		if (input_counters_[input_port] > 5 and
+		if (input_counters_[input_port] > pause_threshold and
 			(not is_paused(input_port))) {
 			if (input_port != -1) {
 				auto pause_pkt = generate_pause_pkt(input_port, PauseAction::PAUSE);
