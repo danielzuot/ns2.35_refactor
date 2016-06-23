@@ -38,7 +38,7 @@ CPP	= g++
 LINK	= $(CPP)
 LINK_SHLIB = 
 MKDEP	= ./conf/mkdep
-TCLSH	= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/bin/tclsh8.5
+TCLSH	= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/bin/tclsh8.5
 TCL2C	= ../tclcl-1.20/tcl2c++
 AR	= ar rc $(BLANK)
 
@@ -48,7 +48,7 @@ LN	= ln
 TEST	= test
 RM	= rm -f
 MV      = mv
-PERL	= /Users/danielzuo/perl5/perlbrew/perls/perl-5.16.0/bin/perl
+PERL	= /usr/bin/perl
 
 # for diffusion
 #DIFF_INCLUDES = "./diffusion3/main ./diffusion3/lib ./diffusion3/nr ./diffusion3/ns"
@@ -64,25 +64,25 @@ DEFINE	= -DTCP_DELAY_BIND_ALL -DNO_TK -DTCLCL_CLASSINSTVAR  -DNDEBUG -DUSE_SHM -
 INCLUDES = \
 	-I. -I/usr/X11R6/include \
 	-I. \
-	-I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tclcl-1.20 -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/otcl-1.14 -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include -I/usr/include/pcap \
+	-I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tclcl-1.20 -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/otcl-1.14 -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/include -I/usr/include/pcap \
 	-I./tcp -I./sctp -I./common -I./link -I./queue \
 	-I./adc -I./apps -I./mac -I./mobile -I./trace \
 	-I./routing -I./tools -I./classifier -I./mcast \
 	-I./diffusion3/lib/main -I./diffusion3/lib \
 	-I./diffusion3/lib/nr -I./diffusion3/ns \
 	-I./diffusion3/filter_core -I./asim/ -I./qs \
-	-I./diffserv -I./satellite \
+	-I./diffserv -I./satellite -I./pause \
 	-I./wpan
 
 
 LIB	= \
-	-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tclcl-1.20 -ltclcl -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/otcl-1.14 -lotcl -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltk8.5 -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltcl8.5 \
+	-L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tclcl-1.20 -ltclcl -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/otcl-1.14 -lotcl -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib -ltk8.5 -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib -ltcl8.5 \
 	-L/usr/X11R6/lib -lXext -lX11 \
 	 -lpcap \
 	-lm -lm -framework CoreFoundation -lstdc++.6
 #	-L${exec_prefix}/lib \
 
-CFLAGS	+= $(CCOPT) $(DEFINE) 
+CFLAGS	+= $(CCOPT) $(DEFINE)
 
 # Explicitly define compilation rules since SunOS 4's make doesn't like gcc.
 # Also, gcc does not remove the .o before forking 'as', which can be a
@@ -91,7 +91,7 @@ CFLAGS	+= $(CCOPT) $(DEFINE)
 
 .cc.o:
 	@rm -f $@
-	$(CPP) -c $(CFLAGS) $(INCLUDES) -o $@ $*.cc
+	$(CPP) -c $(CFLAGS) $(CXXFLAGS) $(INCLUDES) -o $@ $*.cc
 
 .c.o:
 	@rm -f $@
@@ -317,6 +317,7 @@ OBJ_CC = \
 	pushback/logging-data-struct.o \
 	pushback/rate-estimator.o \
 	pushback/pushback-queue.o pushback/pushback.o \
+	pause/pause_header.o \
 	common/parentnode.o trace/basetrace.o \
 	common/simulator.o asim/asim.o \
 	common/scheduler-map.o common/splay-scheduler.o \

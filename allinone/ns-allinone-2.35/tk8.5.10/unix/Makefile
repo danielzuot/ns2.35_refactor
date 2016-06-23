@@ -29,10 +29,10 @@ LOCALES			= cs da de el en en_gb eo es fr hu it nl pl pt ru sv
 # to the "configure" script.  The *dir vars are standard configure
 # substitutions that are based off prefix and exec_prefix.
 
-prefix			= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35
-exec_prefix		= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35
+prefix			= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35
+exec_prefix		= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35
 bindir			= ${exec_prefix}/bin
-libdir			= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib
+libdir			= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib
 includedir		= ${prefix}/include
 datarootdir		= @datarootdir@
 mandir			= ${prefix}/man
@@ -99,15 +99,15 @@ DEMO_INSTALL_DIR	= $(INSTALL_ROOT)$(TK_LIBRARY)/demos
 # The directory containing the Tcl sources and headers appropriate
 # for this version of Tk ("srcdir" will be replaced or has already
 # been replaced by the configure script):
-TCL_GENERIC_DIR		= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/generic
+TCL_GENERIC_DIR		= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/generic
 
 # The directory containing the platform specific Tcl sources and headers
 # appropriate for this version of Tk:
-TCL_PLATFORM_DIR	= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix
+TCL_PLATFORM_DIR	= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix
 
 # The directory containing the Tcl library archive file appropriate
 # for this version of Tk:
-TCL_BIN_DIR		= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix
+TCL_BIN_DIR		= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix
 
 # The linker flags needed to link in the Tcl library (ex: -ltcl8.2)
 TCL_LIB_FLAG		= -ltcl8.5
@@ -147,7 +147,7 @@ LDFLAGS			= $(LDFLAGS_OPTIMIZE)  -prebind -headerpad_max_install_names -Wl,-sear
 # X11 include files accessible (the configure script will try to
 # set this value, and will cause it to be an empty string if the
 # include files are accessible via /usr/include).
-X11_INCLUDES		= 
+X11_INCLUDES		=  -I/usr/X11R6/include
 
 AQUA_INCLUDES		= -I$(MAC_OSX_DIR) -I$(XLIB_DIR)
 
@@ -199,14 +199,14 @@ SHELL			= /bin/sh
 # path. Targets that need an installed tclsh should not depend
 # on this variable.
 
-BUILD_TCLSH		= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix/tclsh
+BUILD_TCLSH		= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix/tclsh
 
 # TCL_EXE is the name of a tclsh executable that is available *BEFORE*
 # running make for the first time. Certain build targets (make genstubs)
 # need it to be available on the PATH. This executable should *NOT* be
 # required just to do a normal build although it can be required to run
 # make dist. This variable is set to "" if no tclsh is available.
-TCL_EXE			= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/bin/tclsh8.5
+TCL_EXE			= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/bin/tclsh8.5
 
 # Tk used to let the configure script choose which program to use
 # for installing, but there are just too many different versions of
@@ -216,7 +216,7 @@ TCL_EXE			= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/
 INSTALL_STRIP_PROGRAM   = -s
 INSTALL_STRIP_LIBRARY   = -S -x
 
-INSTALL			= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tk8.5.10/unix/install-sh -c
+INSTALL			= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tk8.5.10/unix/install-sh -c
 INSTALL_PROGRAM		= ${INSTALL}
 INSTALL_LIBRARY		= ${INSTALL}
 INSTALL_DATA		= ${INSTALL} -m 644
@@ -248,8 +248,8 @@ LIB_FILE		= ${TK_LIB_FILE}
 TK_LIB_FLAG		= -ltk8.5
 #TK_LIB_FLAG		= -ltk
 
-TCL_LIB_SPEC		= -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix -ltcl8.5
-TCL_STUB_LIB_SPEC	= -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix -ltclstub8.5
+TCL_LIB_SPEC		= -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix -ltcl8.5
+TCL_STUB_LIB_SPEC	= -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix -ltclstub8.5
 TCL_STUB_LIB_FLAG	= -ltclstub8.5
 TCL_STUB_LIB_FILE	= libtclstub8.5.a
 
@@ -299,13 +299,13 @@ XFT_LIBS		=
 AC_FLAGS		= -DPACKAGE_NAME=\"tk\" -DPACKAGE_TARNAME=\"tk\" -DPACKAGE_VERSION=\"8.5\" -DPACKAGE_STRING=\"tk\ 8.5\" -DPACKAGE_BUGREPORT=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_LIMITS_H=1 -DSTATIC_BUILD=1 -DMODULE_SCOPE=extern\ __attribute__\(\(__visibility__\(\"hidden\"\)\)\) -DMAC_OSX_TCL=1 -DHAVE_COREFOUNDATION=1 -DTCL_SHLIB_EXT=\".dylib\" -DTCL_CFG_OPTIMIZED=1 -DTCL_CFG_DEBUG=1 -DTCL_WIDE_INT_IS_LONG=1 -DHAVE_SYS_TIME_H=1 -DTIME_WITH_SYS_TIME=1 -DHAVE_INTPTR_T=1 -DHAVE_UINTPTR_T=1 -DHAVE_PW_GECOS=1 -DHAVE_AVAILABILITYMACROS_H=1 -DHAVE_WEAK_IMPORT=1 -D_DARWIN_C_SOURCE=1 
 AR			= ar
 RANLIB			= ranlib
-SRC_DIR			= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tk8.5.10/unix
+SRC_DIR			= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tk8.5.10/unix
 TOP_DIR			= $(SRC_DIR)/..
 GENERIC_DIR		= $(TOP_DIR)/generic
 TTK_DIR			= $(GENERIC_DIR)/ttk
 UNIX_DIR		= $(TOP_DIR)/unix
 BMAP_DIR		= $(TOP_DIR)/bitmaps
-TOOL_DIR		= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/tools
+TOOL_DIR		= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/tools
 TEST_DIR		= $(TOP_DIR)/tests
 MAC_OSX_DIR		= $(TOP_DIR)/macosx
 XLIB_DIR		= $(TOP_DIR)/xlib
@@ -557,8 +557,8 @@ DEMOPROGS = browse hello ixset rmt rolodex tcolor timer widget
 SHELL_ENV = \
 	DYLD_LIBRARY_PATH="`pwd`:${TCL_BIN_DIR}:$${DYLD_LIBRARY_PATH}"; \
 	export DYLD_LIBRARY_PATH; \
-	TCL_LIBRARY=/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/library; export TCL_LIBRARY; \
-	TK_LIBRARY=/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tk8.5.10/library; export TK_LIBRARY;
+	TCL_LIBRARY=/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/library; export TCL_LIBRARY; \
+	TK_LIBRARY=/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tk8.5.10/library; export TK_LIBRARY;
 
 all: binaries libraries doc
 
@@ -568,7 +568,7 @@ libraries:
 
 $(TOP_DIR)/doc/man.macros:
 	chmod +x $(UNIX_DIR)/install-sh
-	$(INSTALL_DATA) /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/doc/man.macros $(TOP_DIR)/doc/man.macros
+	$(INSTALL_DATA) /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/doc/man.macros $(TOP_DIR)/doc/man.macros
 
 doc: $(TOP_DIR)/doc/man.macros
 
@@ -604,7 +604,7 @@ objs: ${OBJS}
 
 
 wish: $(WISH_OBJS) $(TK_LIB_FILE) $(TK_STUB_LIB_FILE) 
-	${CC} ${CFLAGS} ${LDFLAGS} $(WISH_OBJS) -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tk8.5.10/unix -ltk8.5 \
+	${CC} ${CFLAGS} ${LDFLAGS} $(WISH_OBJS) -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tk8.5.10/unix -ltk8.5 \
 		$(WISH_LIBS) $(CC_SEARCH_FLAGS) -o wish
 
 # Resetting the LIB_RUNTIME_DIR below is required so that
@@ -617,7 +617,7 @@ tktest: $(TKTEST_OBJS) $(TK_LIB_FILE)
 	$(MAKE) tktest-real LIB_RUNTIME_DIR="`pwd`:$(TCL_BIN_DIR)"
 
 tktest-real:
-	${CC} ${CFLAGS} ${LDFLAGS} $(TKTEST_OBJS) -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tk8.5.10/unix -ltk8.5 \
+	${CC} ${CFLAGS} ${LDFLAGS} $(TKTEST_OBJS) -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tk8.5.10/unix -ltk8.5 \
 		$(WISH_LIBS) $(CC_SEARCH_FLAGS) -o tktest
 
 # FIXME: This xttest rule seems to be broken in a number of ways.
@@ -626,7 +626,7 @@ tktest-real:
 # test.o object file comes from.
 xttest: test.o tkTest.o tkSquare.o $(TK_LIB_FILE)
 	${CC} ${CFLAGS} ${LDFLAGS} test.o tkTest.o tkSquare.o \
-		-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tk8.5.10/unix -ltk8.5 \
+		-L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tk8.5.10/unix -ltk8.5 \
 		$(WISH_LIBS) $(LD_SEARCH_FLAGS) -lXt -o xttest
 
 # Note, in the target below TCL_LIBRARY needs to be set or else
@@ -670,8 +670,8 @@ demo:
 # This target can be used to run wish inside either gdb or insight
 gdb: wish
 	@echo "set env DYLD_LIBRARY_PATH=\"`pwd`:${TCL_BIN_DIR}:$${DYLD_LIBRARY_PATH}\"" > gdb.run
-	@echo "set env TCL_LIBRARY=/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/library" >> gdb.run
-	@echo "set env TK_LIBRARY=/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tk8.5.10/library" >> gdb.run
+	@echo "set env TCL_LIBRARY=/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/library" >> gdb.run
+	@echo "set env TK_LIBRARY=/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tk8.5.10/library" >> gdb.run
 	gdb ./wish --command=gdb.run
 	rm gdb.run
 
@@ -1494,7 +1494,7 @@ DISTROOT = /tmp/dist
 DISTNAME = tk${VERSION}${PATCH_LEVEL}
 ZIPNAME	 = tk${MAJOR_VERSION}${MINOR_VERSION}${PATCH_LEVEL}-src.zip
 DISTDIR	 = $(DISTROOT)/$(DISTNAME)
-TCLDIR   = /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10
+TCLDIR   = /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10
 $(UNIX_DIR)/configure: $(UNIX_DIR)/configure.in $(UNIX_DIR)/tcl.m4 \
 		$(UNIX_DIR)/aclocal.m4
 	cd $(UNIX_DIR); autoconf

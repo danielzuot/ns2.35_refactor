@@ -22,10 +22,10 @@ PATCH_LEVEL		= .10
 # are standard configure substitutions that are based off prefix and
 # exec_prefix.
 
-prefix			= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35
-exec_prefix		= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35
+prefix			= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35
+exec_prefix		= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35
 bindir			= ${exec_prefix}/bin
-libdir			= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib
+libdir			= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib
 includedir		= ${prefix}/include
 datarootdir		= @datarootdir@
 mandir			= ${prefix}/man
@@ -82,7 +82,7 @@ HTML_INSTALL_DIR	= $(INSTALL_ROOT)$(HTML_DIR)
 CONFIG_INSTALL_DIR	= $(INSTALL_ROOT)$(libdir)
 
 # Package search path.
-TCL_PACKAGE_PATH	= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib 
+TCL_PACKAGE_PATH	= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib 
 
 # Tcl Module default path roots (TIP189).
 TCL_MODULE_PATH		= 
@@ -150,7 +150,7 @@ SHELL			= /bin/sh
 INSTALL_STRIP_PROGRAM   = -s
 INSTALL_STRIP_LIBRARY   = -S -x
 
-INSTALL			= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix/../unix/install-sh -c
+INSTALL			= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix/../unix/install-sh -c
 INSTALL_PROGRAM		= ${INSTALL}
 INSTALL_LIBRARY		= ${INSTALL}
 INSTALL_DATA		= ${INSTALL} -m 644
@@ -215,7 +215,7 @@ AC_FLAGS		= -DPACKAGE_NAME=\"tcl\" -DPACKAGE_TARNAME=\"tcl\" -DPACKAGE_VERSION=\
 AR			= ar
 RANLIB			= ranlib
 DTRACE			= 
-SRC_DIR			= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix
+SRC_DIR			= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix
 TOP_DIR			= $(SRC_DIR)/..
 BUILD_DIR		= .
 GENERIC_DIR		= $(TOP_DIR)/generic
@@ -225,9 +225,9 @@ TOOL_DIR		= $(TOP_DIR)/tools
 UNIX_DIR		= $(TOP_DIR)/unix
 MAC_OSX_DIR		= $(TOP_DIR)/macosx
 # Must be absolute because of the cd dltest $(DLTEST_DIR)/configure below.
-DLTEST_DIR		= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix/dltest
+DLTEST_DIR		= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix/dltest
 # Must be absolute to so the corresponding tcltest's tcl_library is absolute.
-TCL_BUILDTIME_LIBRARY	= /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/library
+TCL_BUILDTIME_LIBRARY	= /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/library
 
 CC			= gcc
 #CC			= purify -best-effort gcc -DPURIFY
@@ -566,7 +566,7 @@ objs: ${OBJS}
 
 
 ${TCL_EXE}: ${TCLSH_OBJS} ${TCL_LIB_FILE}
-	${CC} ${CFLAGS} ${LDFLAGS} ${TCLSH_OBJS} -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix -ltcl8.5 ${LIBS} -sectcreate __TEXT __info_plist Tclsh-Info.plist \
+	${CC} ${CFLAGS} ${LDFLAGS} ${TCLSH_OBJS} -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix -ltcl8.5 ${LIBS} -sectcreate __TEXT __info_plist Tclsh-Info.plist \
 		${CC_SEARCH_FLAGS} -o ${TCL_EXE}
 
 # Resetting the LIB_RUNTIME_DIR below is required so that the generated
@@ -578,7 +578,7 @@ tcltest: ${TCLTEST_OBJS} ${TCL_LIB_FILE} ${BUILD_DLTEST}
 	$(MAKE) tcltest-real LIB_RUNTIME_DIR="`pwd`"
 
 tcltest-real:
-	${CC} ${CFLAGS} ${LDFLAGS} ${TCLTEST_OBJS} -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix -ltcl8.5 ${LIBS} -sectcreate __TEXT __info_plist Tclsh-Info.plist \
+	${CC} ${CFLAGS} ${LDFLAGS} ${TCLTEST_OBJS} -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix -ltcl8.5 ${LIBS} -sectcreate __TEXT __info_plist Tclsh-Info.plist \
 		${CC_SEARCH_FLAGS} -o tcltest
 
 # Note, in the targets below TCL_LIBRARY needs to be set or else "make test"
@@ -1453,7 +1453,7 @@ $(DTRACE_OBJ): $(DTRACE_SRC) $(TCL_OBJS)
 xttest:  ${XTTEST_OBJS} ${GENERIC_OBJS} ${UNIX_OBJS} ${COMPAT_OBJS} \
 	tclLoadDyld.o ${BUILD_DLTEST}
 	${CC} ${XTTEST_OBJS} ${GENERIC_OBJS} ${UNIX_OBJS} ${COMPAT_OBJS} \
-		tclLoadDyld.o -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix -ltcl8.5 ${LIBS} \
+		tclLoadDyld.o -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tcl8.5.10/unix -ltcl8.5 ${LIBS} \
 		${CC_SEARCH_FLAGS} -L/usr/openwin/lib -lXt -o xttest
 
 tclXtNotify.o: $(UNIX_DIR)/tclXtNotify.c

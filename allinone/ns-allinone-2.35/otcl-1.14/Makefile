@@ -38,7 +38,7 @@ INST_OINC=	/usr/local/include
 
 INCLUDES = \
 	-I. \
-	-I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include \
+	-I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/include \
 	-I/usr/X11R6/include \
 	-I${prefix}/include \
 	
@@ -46,7 +46,7 @@ INCLUDES = \
 DEFINES = \
 	 -DNDEBUG -DUSE_SHM -DHAVE_UNISTD_H=1
 
-LIB =	-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltk8.5 -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltcl8.5 \
+LIB =	-L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib -ltk8.5 -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib -ltcl8.5 \
 	-L/usr/X11R6/lib -lXext -lX11  -lm
 
 OTCLLIB= -L. -lotcl

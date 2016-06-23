@@ -14,7 +14,7 @@ static class PauseHeaderClass : public PacketHeaderClass {
 
 
 void hdr_pause::fill_in(Packet* p,
-                        const std::vector<uint16_t> & s_class_pause_durations,
+                        const std::vector<double> & s_class_pause_durations,
                         const std::vector<bool> & s_class_enable_vector) {
   /* Fill in hdr_cmn fields */
   /* Size of Ethernet Control Frame so that txtime() works correctly */

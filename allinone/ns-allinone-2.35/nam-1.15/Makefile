@@ -49,18 +49,18 @@ CCOPT =  -Wall -Wno-write-strings
 MKDEP = ./conf/mkdep
 # Have to be the same as that defined in conf/makefile.win
 TCL2C = ../tclcl-1.20/tcl2c++
-TCLSH = /Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/bin/tclsh8.5
+TCLSH = /Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/bin/tclsh8.5
 
 #
 # Remember to add a dependency if you add any tcl sources here.
 #
 LIB =  \
-	-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tclcl-1.20 -ltclcl -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/otcl-1.14 -lotcl -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltk8.5 -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltcl8.5 -L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/zlib-1.2.3 -lz \
+	-L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tclcl-1.20 -ltclcl -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/otcl-1.14 -lotcl -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib -ltk8.5 -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib -ltcl8.5 -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/zlib-1.2.3 -lz \
 	-L/usr/X11R6/lib -lXext -lX11 \
 	 -lm 
 INCLUDE = \
-	-I. -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tclcl-1.20 -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/otcl-1.14 -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/zlib-1.2.3 \
-	 
+	-I. -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tclcl-1.20 -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/otcl-1.14 -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/zlib-1.2.3 \
+	-I/usr/X11R6/include 
 
 STATIC = 
 DEFINE = -DTCL_TK -DNO_VOID  -DNDEBUG -DUSE_SHM -DHAVE_LIBTCLCL -DHAVE_TCLCL_H -DHAVE_LIBOTCL1_14 -DHAVE_OTCL_H -DHAVE_LIBTK8_5 -DHAVE_TK_H -DHAVE_LIBTCL8_5 -DHAVE_TCLINT_H -DHAVE_TCL_H -DHAVE_LIBZ1_2_3 -DHAVE_ZLIB_H 

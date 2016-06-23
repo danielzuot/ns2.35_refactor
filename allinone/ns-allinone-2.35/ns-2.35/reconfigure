@@ -3,5 +3,4 @@
 clear
 ./configure --x-libraries=/usr/X11R6/lib --x-includes=/usr/X11R6/include --with-tcl-ver=$TCLVER --with-tk-ver=$TKVER --disable-shlib CFLAGS="-framework CoreFoundation"
 make
-cp ns /usr/local/bin/ns
 echo "Reconfigured!"

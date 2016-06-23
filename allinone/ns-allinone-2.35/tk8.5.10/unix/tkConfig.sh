@@ -36,14 +36,14 @@ TK_LIBS='-L/usr/X11R6/lib -lX11   -framework CoreFoundation   -framework CoreFou
 
 # Top-level directory in which Tk's platform-independent files are
 # installed.
-TK_PREFIX='/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35'
+TK_PREFIX='/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35'
 
 # Top-level directory in which Tk's platform-specific files (e.g.
 # executables) are installed.
-TK_EXEC_PREFIX='/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35'
+TK_EXEC_PREFIX='/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35'
 
 # -I switch(es) to use to make all of the X11 include files accessible:
-TK_XINCLUDES=''
+TK_XINCLUDES=' -I/usr/X11R6/include'
 
 # Linker switch(es) to use to link with the X11 library archive.
 TK_XLIBSW='-L/usr/X11R6/lib -lX11'
@@ -53,15 +53,15 @@ TK_LIB_FLAG='-ltk8.5'
 
 # String to pass to linker to pick up the Tk library from its
 # build directory.
-TK_BUILD_LIB_SPEC='-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tk8.5.10/unix -ltk8.5'
+TK_BUILD_LIB_SPEC='-L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tk8.5.10/unix -ltk8.5'
 
 # String to pass to linker to pick up the Tk library from its
 # installed directory.
-TK_LIB_SPEC='-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltk8.5'
+TK_LIB_SPEC='-L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib -ltk8.5'
 
 # String to pass to the compiler so that an extension can
 # find installed Tk headers.
-TK_INCLUDE_SPEC='-I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include'
+TK_INCLUDE_SPEC='-I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/include'
 
 # Location of the top-level source directory from which Tk was built.
 # This is the directory that contains a README file as well as
@@ -69,7 +69,7 @@ TK_INCLUDE_SPEC='-I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-re
 # different place than the directory containing the source files, this
 # points to the location of the sources, not the location where Tk was
 # compiled.
-TK_SRC_DIR='/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tk8.5.10'
+TK_SRC_DIR='/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tk8.5.10'
 
 # Needed if you want to make a 'fat' shared library library
 # containing tk objects or link a different wish.
@@ -84,14 +84,14 @@ TK_STUB_LIB_FLAG='-ltkstub8.5'
 
 # String to pass to linker to pick up the Tk stub library from its
 # build directory.
-TK_BUILD_STUB_LIB_SPEC='-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tk8.5.10/unix -ltkstub8.5'
+TK_BUILD_STUB_LIB_SPEC='-L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tk8.5.10/unix -ltkstub8.5'
 
 # String to pass to linker to pick up the Tk stub library from its
 # installed directory.
-TK_STUB_LIB_SPEC='-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltkstub8.5'
+TK_STUB_LIB_SPEC='-L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib -ltkstub8.5'
 
 # Path to the Tk stub library in the build directory.
-TK_BUILD_STUB_LIB_PATH='/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/tk8.5.10/unix/libtkstub8.5.a'
+TK_BUILD_STUB_LIB_PATH='/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/tk8.5.10/unix/libtkstub8.5.a'
 
 # Path to the Tk stub library in the install directory.
-TK_STUB_LIB_PATH='/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib/libtkstub8.5.a'
+TK_STUB_LIB_PATH='/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib/libtkstub8.5.a'

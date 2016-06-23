@@ -353,7 +353,7 @@ Copyright (C) 2008 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/otcl-1.14'
+ac_pwd='/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/otcl-1.14'
 srcdir='.'
 INSTALL='/usr/bin/install -c'
 test -n "$AWK" || AWK=awk
@@ -518,18 +518,17 @@ S["V_LIB"]=""
 S["V_TAR_EXTRA"]=""
 S["V_CCOPT"]=" -Wall -Wno-write-strings -Wno-parentheses"
 S["V_ALL"]="otclsh"
-S["V_LIB_TK"]="-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltk8.5"
-S["V_LIB_TCL"]="-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltcl8.5"
+S["V_LIB_TK"]="-L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib -ltk8.5"
+S["V_LIB_TCL"]="-L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib -ltcl8.5"
 S["V_LIB_OTCL"]=""
 S["V_LIB_TCLCL"]=""
-S["V_TAR_TARGET"]="darwin14.5.0"
+S["V_TAR_TARGET"]="darwin15.5.0"
 S["V_STATIC"]=""
 S["V_DEFINES"]="-DHAVE_LIBTK8_5 -DHAVE_TK_H -DHAVE_LIBTCL8_5 -DHAVE_TCLINT_H -DHAVE_TCL_H "
-S["V_LIBS"]="-L/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltk8.5 -L/Users/danielzuo/Documents/urop/spring"\
-"16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/lib -ltcl8.5"
-S["V_INCLUDES"]="-I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/n"\
-"s2.35-datacenter-refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allino"\
-"ne-2.35/include"
+S["V_LIBS"]="-L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/lib -ltk8.5 -L/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/alli"\
+"none/ns-allinone-2.35/lib -ltcl8.5"
+S["V_INCLUDES"]="-I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/include -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone"\
+"/ns-allinone-2.35/include -I/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/include"
 S["INST_OLIBSH"]="NONE/lib"
 S["PKG_SHLIB_CFLAGS"]=""
 S["SHLIB_SUFFIX"]=""
@@ -548,7 +547,7 @@ S["V_INCLUDE_X11"]="-I/usr/X11R6/include"
 S["V_LIBRARY_TK"]="../lib/tk8.5"
 S["V_TKDOSNAMES"]="$(LIBRARY_TK)/optMenu.tcl $(LIBRARY_TK)/scrlbar.tcl"
 S["V_LIBRARY_TCL"]="../lib/tcl8.5"
-S["V_TCLSH"]="/Users/danielzuo/Documents/urop/spring16/ns2.35-datacenter-refactor/allinone/ns-allinone-2.35/bin/tclsh8.5"
+S["V_TCLSH"]="/Users/danielzuo/MIT/urop/alizadeh/ns2.35_refactor/allinone/ns-allinone-2.35/bin/tclsh8.5"
 S["V_TCL_LIBRARY_FILES"]="$(TCL_BASE_LIBRARY_FILES) ../lib/tcl8.5/http1.0/http.tcl"
 S["EGREP"]="/usr/bin/grep -E"
 S["GREP"]="/usr/bin/grep"
@@ -563,18 +562,18 @@ S["CPPFLAGS"]=""
 S["LDFLAGS"]=""
 S["CFLAGS"]="-framework CoreFoundation"
 S["CC"]="gcc"
-S["target_os"]="darwin14.5.0"
+S["target_os"]="darwin15.5.0"
 S["target_vendor"]="apple"
 S["target_cpu"]="i386"
-S["target"]="i386-apple-darwin14.5.0"
-S["host_os"]="darwin14.5.0"
+S["target"]="i386-apple-darwin15.5.0"
+S["host_os"]="darwin15.5.0"
 S["host_vendor"]="apple"
 S["host_cpu"]="i386"
-S["host"]="i386-apple-darwin14.5.0"
-S["build_os"]="darwin14.5.0"
+S["host"]="i386-apple-darwin15.5.0"
+S["build_os"]="darwin15.5.0"
 S["build_vendor"]="apple"
 S["build_cpu"]="i386"
-S["build"]="i386-apple-darwin14.5.0"
+S["build"]="i386-apple-darwin15.5.0"
 S["target_alias"]=""
 S["host_alias"]=""
 S["build_alias"]=""

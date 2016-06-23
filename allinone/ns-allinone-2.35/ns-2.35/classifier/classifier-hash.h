@@ -172,16 +172,21 @@ protected:
 	}
 };
 
+class DestHashClassifier;
+
 class DestHashHandler : public Handler {
 public:
-	DestHashHandler(DestHashClassifier& dhc, int32_t input_port) : dhc_(dhc), input_port_(input_port) {}
+	DestHashHandler() {}
+	DestHashHandler(DestHashClassifier* dhc, int32_t input_port) : dhc_(dhc), input_port_(input_port) {}
 	void handle(Event*);
+	Event e_;
 private:
-	DestHashClassifier& dhc_;
+	DestHashClassifier* dhc_;
 	int32_t input_port_;
 };
 
 class DestHashClassifier : public HashClassifier {
+	friend class DestHashHandler;
 public:
 	DestHashClassifier() : HashClassifier(TCL_ONE_WORD_KEYS), enable_pause_(0) { bind ("enable_pause_", &enable_pause_); }
 	virtual int command(int argc, const char*const* argv);
@@ -216,5 +221,5 @@ private:
 	Packet* generate_pause_pkt(const int32_t port_to_pause, const PauseAction action);
 	NsObject* find_dst(const int32_t dst);
 	bool is_paused(const int32_t port);
+	void cancelEvent(Event* e);
 };
-

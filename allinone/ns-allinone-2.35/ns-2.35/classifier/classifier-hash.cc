@@ -60,22 +60,28 @@ extern "C" {
 #include "pause_header.h"
 #include "delay.h"
 #include "queue.h"
-int pause_threshold = 100;
+int pause_threshold = 10;
 
 /****************** HashClassifier Methods ************/
+void DestHashClassifier::cancelEvent(Event* e) {
+	Scheduler::instance().cancel(e);
+}
+
 void DestHashHandler::handle(Event* e) {
 	/* pause frame expired, check if need to renew and send another pause_pkt */
-	if (dhc_->input_counters_[input_port_] > pause_threshold and
-		(not is_paused(input_port_))) {
-		auto pause_pkt = dhc_->generate_pause_pkt(input_port_, PauseAction::PAUSE);
+	if (dhc_->input_counters_[input_port_] > pause_threshold) {
+		/*printf("%f: Port needs to be re-paused, since input_counters[%d] = %d and is_paused=%d\n",
+			Scheduler::instance().clock(),
+			input_port_,
+			dhc_->input_counters_[input_port_],
+			dhc_->is_paused(input_port_));*/
+		auto pause_pkt = dhc_->generate_pause_pkt(input_port_, DestHashClassifier::PauseAction::PAUSE);
 		/* No point sending a pause to an agent */
 		int slot = dhc_->lookup(pause_pkt);
 		dhc_->slot_[slot]->recv(pause_pkt);
-		dhc_->paused_[input_port_] = true;
 		/* schedule the next pause renewal check */
 		Scheduler& s = Scheduler::instance();
-		Event* e = (Event*)pause_pkt;
-		s.schedule(dhc_->pause_renewals_[input_port_], e, hdr_pause::access(pause_pkt)->class_pause_durations_[0]);
+		s.schedule(&(dhc_->pause_renewals_[input_port_]), e, hdr_pause::access(pause_pkt)->class_pause_durations_[0]);
 	}
 }
 
@@ -95,11 +101,18 @@ void DestHashClassifier::deque_callback(Packet* p) {
 			if (input_counters_.at(input_port) < 5 and
 				is_paused(input_port)) {
 				if (input_port != -1) {
+					/*printf("%f: Sending resume packet to %d, since input_counters = %d and is_paused=%d\n",
+						Scheduler::instance().clock(),
+						input_port,
+						input_counters_[input_port],
+						is_paused(input_port));*/
 					auto unpause_pkt = generate_pause_pkt(input_port, PauseAction::RESUME);
 					/* no point sending a pause to an agent */
 					int slot = lookup(unpause_pkt);
 					slot_[slot]->recv(unpause_pkt);
 					paused_.at(input_port) = false;
+					/* cancel the pause renewal check */
+					cancelEvent(&(pause_renewals_[input_port].e_));
 				}
 			}
 
@@ -120,11 +133,13 @@ bool DestHashClassifier::is_paused(const int32_t port) {
 
 Packet* DestHashClassifier::generate_pause_pkt(const int32_t port_to_pause, const PauseAction action) {
 	Packet* pause_pkt = Packet::alloc();
-	uint16_t pause = (action == PauseAction::PAUSE) ? 1 : 0;
-	uint16_t pause_durations_array[8] = {pause, pause, pause, pause, pause, pause, pause, pause};
-	bool enable_array[8] = {true, true, true, true, true, true, true, true};
-	std::vector<uint16_t> pause_durations_vector(&pause_durations_array[0], &pause_durations_array[0]+8);
-	std::vector<bool> enable_vector(&enable_array[0], &enable_array[0]+8);
+	double pause = (action == PauseAction::PAUSE) ? 0.0001 : 0;
+	std::vector<double> pause_durations_vector;
+	std::vector<bool> enable_vector;
+	for (uint8_t i = 0; i < hdr_pause::NUM_ETH_CLASS; i++) {
+		pause_durations_vector.push_back(pause);
+		enable_vector.push_back(true);
+	}
 	hdr_pause::fill_in(pause_pkt, pause_durations_vector, enable_vector);
 	hdr_ip::access(pause_pkt)->saddr() = node_id_;
 	hdr_ip::access(pause_pkt)->daddr() = port_to_pause;
@@ -156,6 +171,11 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 			const auto src_addr = hdr_ip::access(p)->saddr();
 			assert(src_addr != node_id_);
 
+			/* cancel pause expiration timer */
+			auto link_to_pause = find_node_type<LinkDelay>(find_dst(src_addr));
+			auto resume_event = &(link_to_pause->intr());
+			cancelEvent(resume_event);
+
 			/* unblock queue */
 			auto queue_to_unblock = find_node_type<Queue>(find_dst(src_addr));
 			assert(queue_to_unblock->blocked() == 1);
@@ -170,16 +190,24 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 			/* if you are receiving a pause */
 			const auto src_addr = hdr_ip::access(p)->saddr();
 			assert(src_addr != node_id_);
+			/*printf("%f: %d: Received a pause frame from %d of length %f\n",
+				Scheduler::instance().clock(),
+				node_id_,
+				src_addr,
+				hdr_pause::access(p)->class_pause_durations_[0]);*/
 
 			/* find the LinkDelay class */
 			/* Cancel timer that fires after existing packet delivery event */
 			Scheduler& s = Scheduler::instance();
 			auto link_to_pause = find_node_type<LinkDelay>(find_dst(src_addr));
-			auto resume_event = &link_to_pause->intr();
-			s.cancel(resume_event);
+			auto resume_event = &(link_to_pause->intr());
+			double original_time = resume_event->time_;
+			cancelEvent(resume_event);
 
 			/* dzuo: Reset unblock timer to fire after pause_delay has expired */
 			resume_event->time_ = s.clock() + hdr_pause::access(p)->class_pause_durations_[0];
+			/* if negative, then it's already happened, otherwise don't touch */
+			resume_event->uid_ = abs(resume_event->uid_);
 			s.insert(resume_event);
 
 			/* set queue to blocked */
@@ -202,8 +230,12 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 		input_counters_[input_port]++;
 		if (pause_renewals_.count(input_port) == 0 && input_port != -1) {
 			/* new input port, need to create and add handler */
-			pause_renewals_[input_port] = DestHashHandler(*this, input_port);
+			pause_renewals_[input_port] = DestHashHandler(this, input_port);
 		}
+		// printf("%f: %d: received a packet from %d\n",
+		// 	Scheduler::instance().clock(),
+		// 	node_id_,
+		// 	input_port);
 		if (input_counters_[input_port] > pause_threshold and
 			(not is_paused(input_port))) {
 			if (input_port != -1) {
@@ -214,8 +246,7 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 				paused_[input_port] = true;
 				/* schedule the pause renewal check */
 				Scheduler& s = Scheduler::instance();
-				Event* e = (Event*)pause_pkt;
-				s.schedule(pause_renewals_[input_port], e, hdr_pause::access(pause_pkt)->class_pause_durations_[0]);
+				s.schedule(&pause_renewals_[input_port], &pause_renewals_[input_port].e_, hdr_pause::access(pause_pkt)->class_pause_durations_[0]);
 			}
 		}
 	}

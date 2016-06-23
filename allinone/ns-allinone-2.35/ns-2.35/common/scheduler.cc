@@ -141,7 +141,7 @@ void
 Scheduler::dispatch(Event* p, double t)
 {
 	if (t < clock_) {
-		fprintf(stderr, "ns: scheduler going backwards in time from %f to %f.\n", clock_, t);
+		fprintf(stderr, "ns: scheduler going backwards in time from %f to %f when trying to dispatch event UID %d.\n", clock_, t, p->uid_);
 		abort();
 	}
 
