@@ -214,6 +214,7 @@ int Queue::command(int argc, const char*const* argv) {
 	if (argc == 3) {
 		if (strcmp(argv[1], "attach-classifier") == 0) {
 			classifier_ = dynamic_cast<DestHashClassifier*>(TclObject::lookup(argv[2]));
+			classifier_->attach_queue_callback(qlim_);
 			if (classifier_ == nullptr) {
 				tcl.resultf("no such object %s", argv[2]);
 				return (TCL_ERROR);

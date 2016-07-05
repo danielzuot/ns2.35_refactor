@@ -380,6 +380,10 @@ Classifier set debug_ false
 
 Classifier/Hash set default_ -1; # none
 Classifier/Hash/Dest set enable_pause_ 0
+Classifier/Hash/Dest set pause_threshold_ 0
+Classifier/Hash/Dest set resume_threshold_ 0
+Classifier/Hash/Dest set enable_pause_ 0
+Classifier/Hash/Dest set pause_duration_ 0
 Classifier/Replicator set ignore_ 0
 
 # MPLS Classifier

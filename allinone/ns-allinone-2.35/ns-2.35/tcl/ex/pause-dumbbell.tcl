@@ -5,13 +5,13 @@ set enable_pause 1
 set enableNAM 0
 set mytracefile [open traces/mytracefile.tr w]
 set throughputfile [open traces/thrfile.tr w]
-set traceSamplingInterval 0.0001  
+set traceSamplingInterval 0.00001  
 set throughputSamplingInterval 0.01
-set K 5
+set K 10
 set RTT 0.0005
 set inputLineRate 10Gbs
 set simulationTime 1.5
-set startMeasurementTime 0.001
+set startMeasurementTime 0.5
 set stopMeasurementTime 1
 set classifyDelay 0.01
 set throughputTraceStart 0.01
@@ -19,7 +19,11 @@ set f0Start 0.001
 set f1Start 0.1
 set f2Start 0.5
 set burstInterval 0.1
-set burstSize 5000
+set burstSize 1000
+set pauseThreshold 15
+set resumeThreshold 5
+set pauseDuration 1 
+
 
 assert [expr $simulationTime <= 1.5]
 # Sequence number wraps around otherwise
@@ -66,7 +70,7 @@ DelayLink set avoidReordering_ true
 # pause instrumentation and queue monitors
 if {$enable_pause == 1} {
     puts "Pause enabled"
-    Queue set limit_ 10000000
+    Queue set limit_ 10000
 } else {
     puts "Pause disabled"
     Queue set limit_ 1000
@@ -85,13 +89,21 @@ if {$enableNAM != 0} {
 # Procedure to attach classifier to queues
 # for nodes n1 and n2
 proc attach-classifiers {ns n1 n2} {
+    global pauseThreshold resumeThreshold pauseDuration
     set fwd_queue [[$ns link $n1 $n2] queue]
     $fwd_queue attach-classifier [$n1 entry]
     [$n1 entry] set enable_pause_ 1
+    [$n1 entry] set pause_threshold_ $pauseThreshold
+    [$n1 entry] set resume_threshold_ $resumeThreshold
+    [$n1 entry] set pause_duration_ $pauseDuration
+
 
     set bwd_queue [[$ns link $n2 $n1] queue]
     $bwd_queue attach-classifier [$n2 entry]
     [$n2 entry] set enable_pause_ 1
+    [$n2 entry] set pause_threshold_ $pauseThreshold
+    [$n2 entry] set resume_threshold_ $resumeThreshold
+    [$n2 entry] set pause_duration_ $pauseDuration
 }
 
 ##### Topology ###########
@@ -112,7 +124,7 @@ set nsink [$ns node]
 
 # create links
 # first the main link
-$ns duplex-link $nsource $nsink $inputLineRate [expr $RTT/8] RED
+$ns duplex-link $nsource $nsink $inputLineRate [expr ($RTT/ 2)] RED
 $ns duplex-link-op $nsource $nsink queuePos 0.25
 set qmon [$ns monitor-queue $nsource $nsink [open traces/queue.tr w] $traceSamplingInterval]
 if {$enable_pause == 1} {
@@ -121,15 +133,15 @@ if {$enable_pause == 1} {
 
 for {set i 0} {$i < $N} {incr i} {
     if {$i % 2 == 0} {
-      $ns simplex-link $nsource $n($i) $inputLineRate [expr $RTT/8] RED
-      $ns simplex-link $n($i) $nsource $inputLineRate [expr $RTT/8] DropTail
+      $ns simplex-link $nsource $n($i) $inputLineRate 0.000001 RED
+      $ns simplex-link $n($i) $nsource $inputLineRate 0.000001 DropTail
       
       if {$enable_pause == 1} {
         attach-classifiers $ns $nsource $n($i)
       }
     } else {
-      $ns simplex-link $nsink $n($i) $inputLineRate [expr $RTT/8] RED
-      $ns simplex-link $n($i) $nsink $inputLineRate [expr $RTT/8] DropTail
+      $ns simplex-link $nsink $n($i) $inputLineRate 0.000001 RED
+      $ns simplex-link $n($i) $nsink $inputLineRate 0.000001 DropTail
 
       if {$enable_pause == 1} {
         attach-classifiers $ns $nsink $n($i)
@@ -238,14 +250,14 @@ proc throughputTrace {file} {
     
     $qmon instvar bdepartures_
     
-    puts -nonewline $file "$now [expr ($bdepartures_/$throughputSamplingInterval)/1000000]"
+    puts -nonewline $file "$now [expr ($bdepartures_*8/$throughputSamplingInterval)/1000000]"
     set bdepartures_ 0
     for {set i 0} {$i < 3} {incr i} {
       if {[info exists flowstats($i)] == 0} {
         puts -nonewline $file " 0"
       } else {
         $flowstats($i) instvar barrivals_
-        puts -nonewline $file " [expr ($barrivals_/$throughputSamplingInterval)/1000000]"
+        puts -nonewline $file " [expr ($barrivals_*8/$throughputSamplingInterval)/1000000]"
         set barrivals_ 0
       }
     }
@@ -264,16 +276,16 @@ proc startMeasurement {} {
 }
 
 proc stopMeasurement {} {
-  global qmon startPacketCount stopPacketCount packetSize startMeasurementTime stopMeasurementTime simulationTime
+  global qmon startPacketCount stopPacketCount startMeasurementTime packetSize stopMeasurementTime simulationTime
   $qmon instvar pdepartures_   
   set stopPacketCount $pdepartures_
-  puts "Throughput = [expr ($stopPacketCount-$startPacketCount)/(1024.0*1024*($stopMeasurementTime-$startMeasurementTime))*$packetSize*8] Mbps"
+  puts "Throughput = [expr (($stopPacketCount-$startPacketCount) *$packetSize *8) / (($stopMeasurementTime-$startMeasurementTime) *1000000) ] Mbps"
 }
 
 #set the random seed for consistent results
 ns-random 0
-# $ns at $startMeasurementTime "startMeasurement"
-# $ns at $stopMeasurementTime "stopMeasurement"
+$ns at $startMeasurementTime "startMeasurement"
+$ns at $stopMeasurementTime "stopMeasurement"
 $ns at $traceSamplingInterval "myTrace $mytracefile"
 $ns at $throughputTraceStart "throughputTrace $throughputfile"
 $ns at $simulationTime "finish"
