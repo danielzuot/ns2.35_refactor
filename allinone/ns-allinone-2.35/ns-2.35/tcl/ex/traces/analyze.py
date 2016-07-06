@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-trace_data = np.loadtxt('mytracefile.tr')
+trace_data = np.loadtxt('qfile.tr')
 thr_data = np.loadtxt('thrfile.tr')
 
 ################### plot window sizes of specific flow ids ##################

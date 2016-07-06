@@ -1,14 +1,19 @@
 set ns [new Simulator]
 
+# EXPERIMENTS
+# set resultsPath [file join "results" [lindex $argv 0] results.tr]
+# set K [expr [lindex $argv 1]]
+
 # PARAMETERS
 set enable_pause 1
 set enableNAM 0
-set mytracefile [open traces/mytracefile.tr w]
-set throughputfile [open traces/thrfile.tr w]
+set queueFile [open traces/qfile.tr w]
+set instThroughputFile [open traces/thrfile.tr w]
+# set resultsFile [open $resultsPath a]
 set traceSamplingInterval 0.00001  
 set throughputSamplingInterval 0.01
-set K 10
 set RTT 0.0005
+set K 50
 set inputLineRate 10Gbs
 set simulationTime 1.5
 set startMeasurementTime 0.5
@@ -18,14 +23,17 @@ set throughputTraceStart 0.01
 set f0Start 0.001
 set f1Start 0.1
 set f2Start 0.5
-set burstInterval 0.1
+set burstInterval 0.005
 set burstSize 1000
-set pauseThreshold 15
+set pauseThreshold 100
 set resumeThreshold 5
 set pauseDuration 1 
 
 
 assert [expr $simulationTime <= 1.5]
+set ql_sum 0
+set ql_n 0
+set totalThroughput 0
 # Sequence number wraps around otherwise
 
 ##### Transport defaults, like packet size ######
@@ -200,10 +208,12 @@ proc sendBursts {} {
 }
 
 proc finish {} {
-  global ns enableNAM namfile mytracefile throughputfile
+  global ns enableNAM namfile queueFile instThroughputFile resultsFile
+  # writeResults
   $ns flush-trace
-  close $mytracefile
-  close $throughputfile
+  close $queueFile
+  close $instThroughputFile
+  # close $resultsFile
   if {$enableNAM != 0} {
     close $namfile
     exec nam out.nam &
@@ -211,8 +221,15 @@ proc finish {} {
   exit 0
 }
 
+proc writeResults {} {
+  global resultsFile totalThroughput ql_sum ql_n K
+  set averageQueueLength [expr 1.0 * $ql_sum / $ql_n]
+  puts -nonewline $resultsFile "$K $totalThroughput $averageQueueLength"
+  puts $resultsFile ""
+}
+
 proc myTrace {file} {
-    global ns N traceSamplingInterval tcp qmon
+    global ns N traceSamplingInterval tcp qmon ql_sum ql_n
     
     set now [$ns now]
     
@@ -233,7 +250,11 @@ proc myTrace {file} {
 
     puts -nonewline $file " [expr $parrivals_-$pdepartures_-$pdrops_]"    
     puts $file " $pdrops_"
-     
+
+    set len [$qmon set pkts_]
+    set ql_sum [expr $ql_sum + $len]
+    set ql_n [expr $ql_n + 1]
+
     $ns at [expr $now+$traceSamplingInterval] "myTrace $file"
 }
 
@@ -276,18 +297,18 @@ proc startMeasurement {} {
 }
 
 proc stopMeasurement {} {
-  global qmon startPacketCount stopPacketCount startMeasurementTime packetSize stopMeasurementTime simulationTime
+  global qmon startPacketCount stopPacketCount startMeasurementTime packetSize stopMeasurementTime simulationTime totalThroughput
   $qmon instvar pdepartures_   
   set stopPacketCount $pdepartures_
-  puts "Throughput = [expr (($stopPacketCount-$startPacketCount) *$packetSize *8) / (($stopMeasurementTime-$startMeasurementTime) *1000000) ] Mbps"
+  set totalThroughput [expr (($stopPacketCount-$startPacketCount) *$packetSize *8) / (($stopMeasurementTime-$startMeasurementTime) *1000000) ]
 }
 
 #set the random seed for consistent results
 ns-random 0
 $ns at $startMeasurementTime "startMeasurement"
 $ns at $stopMeasurementTime "stopMeasurement"
-$ns at $traceSamplingInterval "myTrace $mytracefile"
-$ns at $throughputTraceStart "throughputTrace $throughputfile"
+$ns at $traceSamplingInterval "myTrace $queueFile"
+$ns at $throughputTraceStart "throughputTrace $instThroughputFile"
 $ns at $simulationTime "finish"
 
 $ns run

@@ -1,0 +1,12 @@
+7.5.16
+
+K = (50-10:5, 9-5)
+pause_threshold = 10
+resume_threshold = 5
+RTT = 0.0005
+throughput_measurement_range = 0.5-1
+burst_interval = 0.1
+burst_size = 1000
+pause_duration = 1
+queue_limit = 10000
+
