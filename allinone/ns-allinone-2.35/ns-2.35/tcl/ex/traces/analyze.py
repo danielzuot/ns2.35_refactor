@@ -44,6 +44,19 @@ plt.title('Queue drops at main link')
 plt.xlabel('time (s)')
 plt.ylabel('cumulative drops (packets)')
 plt.legend()
+plt.show()
+
+################### plot pauses generated ##################
+fig = plt.figure()
+pauses_col = 9
+plt.plot(trace_data[:,0], trace_data[:,queue_drops_col])
+# axes = plt.gca()
+# axes.set_xlim([0.4, 0.8])
+# axes.set_ylim([0,10])
+plt.title('Pauses generated at main link')
+plt.xlabel('time (s)')
+plt.ylabel('cumulative pause packets')
+plt.legend()
 plt.show()  
 
 ################## plot instantaneous throughputs ##################

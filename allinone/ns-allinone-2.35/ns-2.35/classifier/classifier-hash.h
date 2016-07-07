@@ -189,7 +189,7 @@ private:
 class DestHashClassifier : public HashClassifier {
 	friend class DestHashHandler;
 public:
-	DestHashClassifier() : HashClassifier(TCL_ONE_WORD_KEYS), enable_pause_(0), qcap_(0), pause_duration_(0), pause_threshold_(0), resume_threshold_(0)
+	DestHashClassifier() : HashClassifier(TCL_ONE_WORD_KEYS), enable_pause_(0), qcap_(0), pause_duration_(0), pause_threshold_(0), resume_threshold_(0), pause_count_(0)
 		{ bind ("enable_pause_", &enable_pause_);
 		  bind ("pause_threshold_", &pause_threshold_);
 		  bind ("resume_threshold_", &resume_threshold_);
@@ -205,6 +205,7 @@ protected:
 	std::map<int32_t, uint64_t> input_counters_;
 	std::map<int32_t, DestHashHandler> pause_renewals_;
 	std::map<int32_t, bool> paused_;
+	int pause_count_;
 	uint64_t qcap_;
 	const char* hashkey(nsaddr_t, nsaddr_t dst, int) {
 		long key = mshift(dst);

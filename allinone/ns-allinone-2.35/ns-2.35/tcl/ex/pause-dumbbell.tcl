@@ -25,7 +25,7 @@ set f1Start 0.1
 set f2Start 0.5
 set burstInterval 0.005
 set burstSize 1000
-set pauseThreshold 100
+set pauseThreshold 1000
 set resumeThreshold 5
 set pauseDuration 1 
 
@@ -229,7 +229,7 @@ proc writeResults {} {
 }
 
 proc myTrace {file} {
-    global ns N traceSamplingInterval tcp qmon ql_sum ql_n
+    global ns traceSamplingInterval tcp qmon ql_sum ql_n
     
     set now [$ns now]
     

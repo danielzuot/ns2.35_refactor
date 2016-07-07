@@ -69,15 +69,16 @@ void DestHashClassifier::cancelEvent(Event* e) {
 void DestHashHandler::handle(Event* e) {
 	/* pause frame expired, check if need to renew and send another pause_pkt */
 	if (dhc_->input_counters_[input_port_] > dhc_->pause_threshold_) {
-		// printf("%f: Port needs to be re-paused, since input_counters[%d] = %d and is_paused=%d\n",
-		// 	Scheduler::instance().clock(),
-		// 	input_port_,
-		// 	dhc_->input_counters_[input_port_],
-		// 	dhc_->is_paused(input_port_));
+		printf("%f: Port needs to be re-paused, since input_counters[%d] = %d and is_paused=%d\n",
+			Scheduler::instance().clock(),
+			input_port_,
+			dhc_->input_counters_[input_port_],
+			dhc_->is_paused(input_port_));
 		auto pause_pkt = dhc_->generate_pause_pkt(input_port_, DestHashClassifier::PauseAction::PAUSE);
 		/* No point sending a pause to an agent */
 		int slot = dhc_->lookup(pause_pkt);
 		dhc_->slot_[slot]->recv(pause_pkt);
+		dhc_->pause_count_++;
 		/* schedule the next pause renewal check */
 		Scheduler& s = Scheduler::instance();
 		s.schedule(&(dhc_->pause_renewals_[input_port_]), e, hdr_pause::access(pause_pkt)->class_pause_durations_[0]);
@@ -243,11 +244,12 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 				int slot = lookup(pause_pkt);
 				slot_[slot]->recv(pause_pkt);
 				paused_[input_port] = true;
-				// printf("%f: Sending pause packet to %d, since input_counters = %d and is_paused=%d\n",
-				// 		Scheduler::instance().clock(),
-				// 		input_port,
-				// 		input_counters_[input_port],
-				// 		is_paused(input_port));
+				pause_count_++;
+				printf("%f: Sending pause packet to %d, since input_counters = %d and is_paused=%d\n",
+						Scheduler::instance().clock(),
+						input_port,
+						input_counters_[input_port],
+						is_paused(input_port));
 				/* schedule the pause renewal check */
 				Scheduler& s = Scheduler::instance();
 				s.schedule(&pause_renewals_[input_port], &pause_renewals_[input_port].e_, hdr_pause::access(pause_pkt)->class_pause_durations_[0]);
