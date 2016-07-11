@@ -69,11 +69,11 @@ void DestHashClassifier::cancelEvent(Event* e) {
 void DestHashHandler::handle(Event* e) {
 	/* pause frame expired, check if need to renew and send another pause_pkt */
 	if (dhc_->input_counters_[input_port_] > dhc_->pause_threshold_) {
-		printf("%f: Port needs to be re-paused, since input_counters[%d] = %d and is_paused=%d\n",
-			Scheduler::instance().clock(),
-			input_port_,
-			dhc_->input_counters_[input_port_],
-			dhc_->is_paused(input_port_));
+		// printf("%f: Port needs to be re-paused, since input_counters[%d] = %d and is_paused=%d\n",
+		// 	Scheduler::instance().clock(),
+		// 	input_port_,
+		// 	dhc_->input_counters_[input_port_],
+		// 	dhc_->is_paused(input_port_));
 		auto pause_pkt = dhc_->generate_pause_pkt(input_port_, DestHashClassifier::PauseAction::PAUSE);
 		/* No point sending a pause to an agent */
 		int slot = dhc_->lookup(pause_pkt);
@@ -100,7 +100,13 @@ void DestHashClassifier::deque_callback(Packet* p) {
 			const int32_t input_port = hdr_cmn::access(p)->input_port();
 			assert(input_counters_.at(input_port) > 0);
 			input_counters_.at(input_port)--;
-
+			if (input_port == 0) {
+				q_makeup_zero_--;
+			} else if (input_port == 2) {
+				q_makeup_one_--;
+			} else if (input_port == 4) {
+				q_makeup_two_--;
+			}
 			/* Resume logic */
 			if (input_counters_.at(input_port) < resume_threshold_ and
 				is_paused(input_port)) {
@@ -236,6 +242,13 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 			/* new input port, need to create and add handler */
 			pause_renewals_[input_port] = DestHashHandler(this, input_port);
 		}
+		if (input_port == 0) {
+				q_makeup_zero_++;
+			} else if (input_port == 2) {
+				q_makeup_one_++;
+			} else if (input_port == 4) {
+				q_makeup_two_++;
+			}
 		if (input_counters_[input_port] > pause_threshold_ and
 			(not is_paused(input_port))) {
 			if (input_port != -1) {
@@ -245,11 +258,11 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 				slot_[slot]->recv(pause_pkt);
 				paused_[input_port] = true;
 				pause_count_++;
-				printf("%f: Sending pause packet to %d, since input_counters = %d and is_paused=%d\n",
-						Scheduler::instance().clock(),
-						input_port,
-						input_counters_[input_port],
-						is_paused(input_port));
+				// printf("%f: Sending pause packet to %d, since input_counters = %d and is_paused=%d\n",
+				// 		Scheduler::instance().clock(),
+				// 		input_port,
+				// 		input_counters_[input_port],
+				// 		is_paused(input_port));
 				/* schedule the pause renewal check */
 				Scheduler& s = Scheduler::instance();
 				s.schedule(&pause_renewals_[input_port], &pause_renewals_[input_port].e_, hdr_pause::access(pause_pkt)->class_pause_durations_[0]);

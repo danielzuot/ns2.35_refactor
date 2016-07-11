@@ -384,6 +384,10 @@ Classifier/Hash/Dest set pause_threshold_ 0
 Classifier/Hash/Dest set resume_threshold_ 0
 Classifier/Hash/Dest set enable_pause_ 0
 Classifier/Hash/Dest set pause_duration_ 0
+Classifier/Hash/Dest set pause_count_ 0
+Classifier/Hash/Dest set q_makeup_zero_ 0
+Classifier/Hash/Dest set q_makeup_one_ 0
+Classifier/Hash/Dest set q_makeup_two_ 0
 Classifier/Replicator set ignore_ 0
 
 # MPLS Classifier

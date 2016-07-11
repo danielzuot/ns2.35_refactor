@@ -4,7 +4,7 @@
 
 expNum=$1
 #now=$(date +%Y%m%d%H%M%S)
-for K in $(seq 15 -1 5); do
+for K in $(seq 150 -10 20); do
     ns pause-dumbbell.tcl $expNum $K
 done
 # for K in $(seq 9 -1 5); do

@@ -1,0 +1,11 @@
+7.7.16
+
+K = 50
+pause_threshold = 1000
+resume_threshold = 5
+RTT = 0.0005
+burst_interval = 0.005
+burst_size = 1000
+pause_duration = 1
+queue_limit = 10000
+

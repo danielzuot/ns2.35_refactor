@@ -2,22 +2,24 @@ set ns [new Simulator]
 
 # EXPERIMENTS
 # set resultsPath [file join "results" [lindex $argv 0] results.tr]
-# set K [expr [lindex $argv 1]]
+# set pauseThreshold [expr [lindex $argv 1]]
 
 # PARAMETERS
 set enable_pause 1
 set enableNAM 0
-set queueFile [open traces/qfile.tr w]
+set queueFile [open traces/queue.tr w]
+set srcQueueFile [open traces/srcqueue.tr w]
+set myTraceFile [open traces/mytrace.tr w]
 set instThroughputFile [open traces/thrfile.tr w]
 # set resultsFile [open $resultsPath a]
 set traceSamplingInterval 0.00001  
-set throughputSamplingInterval 0.01
+set throughputSamplingInterval 0.001
 set RTT 0.0005
 set K 50
 set inputLineRate 10Gbs
 set simulationTime 1.5
-set startMeasurementTime 0.5
-set stopMeasurementTime 1
+set startMeasurementTime 0.8
+set stopMeasurementTime 1.4
 set classifyDelay 0.01
 set throughputTraceStart 0.01
 set f0Start 0.001
@@ -25,7 +27,7 @@ set f1Start 0.1
 set f2Start 0.5
 set burstInterval 0.005
 set burstSize 1000
-set pauseThreshold 1000
+set pauseThreshold 20
 set resumeThreshold 5
 set pauseDuration 1 
 
@@ -134,7 +136,7 @@ set nsink [$ns node]
 # first the main link
 $ns duplex-link $nsource $nsink $inputLineRate [expr ($RTT/ 2)] RED
 $ns duplex-link-op $nsource $nsink queuePos 0.25
-set qmon [$ns monitor-queue $nsource $nsink [open traces/queue.tr w] $traceSamplingInterval]
+set qmon [$ns monitor-queue $nsource $nsink $queueFile $traceSamplingInterval]
 if {$enable_pause == 1} {
   attach-classifiers $ns $nsource $nsink
 }
@@ -157,6 +159,11 @@ for {set i 0} {$i < $N} {incr i} {
     }
 }
 
+# create qmons for the nicks into the network
+for {set i 0} {$i < 3} {incr i} {
+  set j [expr 2*$i]
+  set source_qmon($i) [$ns monitor-queue $n($j) $nsource $srcQueueFile $traceSamplingInterval]
+}
 # create tcp connections: 0->1, 2->3, 4->5
 for {set i 0} {$i < 3} {incr i} {
   set tcp($i) [new Agent/TCP/FullTcp/Sack]
@@ -208,11 +215,13 @@ proc sendBursts {} {
 }
 
 proc finish {} {
-  global ns enableNAM namfile queueFile instThroughputFile resultsFile
+  global ns enableNAM namfile queueFile instThroughputFile resultsFile myTraceFile srcQueueFile
   # writeResults
   $ns flush-trace
   close $queueFile
   close $instThroughputFile
+  close $myTraceFile
+  close $srcQueueFile
   # close $resultsFile
   if {$enableNAM != 0} {
     close $namfile
@@ -222,14 +231,14 @@ proc finish {} {
 }
 
 proc writeResults {} {
-  global resultsFile totalThroughput ql_sum ql_n K
+  global resultsFile totalThroughput ql_sum ql_n pauseThreshold
   set averageQueueLength [expr 1.0 * $ql_sum / $ql_n]
-  puts -nonewline $resultsFile "$K $totalThroughput $averageQueueLength"
+  puts -nonewline $resultsFile "$pauseThreshold $totalThroughput $averageQueueLength"
   puts $resultsFile ""
 }
 
 proc myTrace {file} {
-    global ns traceSamplingInterval tcp qmon ql_sum ql_n
+    global ns traceSamplingInterval tcp qmon ql_sum ql_n nsource source_qmon
     
     set now [$ns now]
     
@@ -238,7 +247,7 @@ proc myTrace {file} {
       set dctcp_alpha($i) [$tcp($i) set dctcp_alpha_]
     }
     
-    $qmon instvar parrivals_ pdepartures_ pdrops_ bdepartures_
+    $qmon instvar parrivals_ pdepartures_ pdrops_
   
     puts -nonewline $file "$now"
     for {set i 0} {$i < 3} {incr i} {
@@ -249,11 +258,21 @@ proc myTrace {file} {
     }
 
     puts -nonewline $file " [expr $parrivals_-$pdepartures_-$pdrops_]"    
-    puts $file " $pdrops_"
+    puts -nonewline $file " $pdrops_"
 
     set len [$qmon set pkts_]
     set ql_sum [expr $ql_sum + $len]
     set ql_n [expr $ql_n + 1]
+
+    [$nsource entry] instvar pause_count_ q_makeup_zero_ q_makeup_one_ q_makeup_two_
+    puts -nonewline $file " $pause_count_"
+    puts -nonewline $file " $q_makeup_zero_ $q_makeup_one_ $q_makeup_two_"
+
+    for {set i 0} {$i < 3} {incr i} {
+      $source_qmon($i) instvar parrivals_ pdepartures_ pdrops_
+      puts -nonewline $file " [expr $parrivals_-$pdepartures_-$pdrops_]"
+    }
+    puts $file ""
 
     $ns at [expr $now+$traceSamplingInterval] "myTrace $file"
 }
@@ -307,7 +326,7 @@ proc stopMeasurement {} {
 ns-random 0
 $ns at $startMeasurementTime "startMeasurement"
 $ns at $stopMeasurementTime "stopMeasurement"
-$ns at $traceSamplingInterval "myTrace $queueFile"
+$ns at $traceSamplingInterval "myTrace $myTraceFile"
 $ns at $throughputTraceStart "throughputTrace $instThroughputFile"
 $ns at $simulationTime "finish"
 
