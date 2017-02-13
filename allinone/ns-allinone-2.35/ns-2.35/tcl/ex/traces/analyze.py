@@ -33,7 +33,6 @@ plt.plot(trace_data[:,0], trace_data[:,queue_length_col])
 plt.title('Queue length of main link')
 plt.xlabel('time (s)')
 plt.ylabel('queue length (packets)')
-plt.legend()
 plt.savefig(path_to_experiment+'/queue_length.png', bbox_inches='tight') 
 
 ################### plot queue drops ##################
@@ -46,7 +45,6 @@ plt.plot(trace_data[:,0], trace_data[:,queue_drops_col])
 plt.title('Queue drops at main link')
 plt.xlabel('time (s)')
 plt.ylabel('cumulative drops (packets)')
-plt.legend()
 plt.savefig(path_to_experiment+'/queue_drops.png', bbox_inches='tight')
 
 ################### plot pauses generated ##################
@@ -59,7 +57,6 @@ plt.plot(trace_data[:,0], trace_data[:,pauses_col])
 plt.title('Pauses generated at main link')
 plt.xlabel('time (s)')
 plt.ylabel('cumulative pause packets')
-plt.legend()
 plt.savefig(path_to_experiment+'/pauses_sent.png', bbox_inches='tight') 
 
 ################## plot instantaneous throughputs ##################
@@ -86,24 +83,27 @@ input_col_offset = 10
 for fid in fids:
     plt.plot(trace_data[:,0], trace_data[:,fid+input_col_offset], label='fid '+str(fid))
 axes = plt.gca()
+axes.set_xlim([1.3, 1.31])
 plt.title('makeup of the queue')
 plt.xlabel('time (s)')
 plt.ylabel('packets')
 plt.legend()
-fig.show()
-plt.savefig(path_to_experiment+'/queue_makeup.png', bbox_inches='tight')
+plt.show()
 
-################## plot source queues lengths ##################
-fig = plt.figure()
-fids = [0, 1, 2]
-sourceq_col_offset = 13
-for fid in fids:
-    plt.plot(trace_data[:,0], trace_data[:,fid+sourceq_col_offset], label='fid '+str(fid))
-axes = plt.gca()
-plt.title('source queue lengths')
-plt.xlabel('time (s)')
-plt.ylabel('packets')
-plt.legend()
-fig.show()
-plt.savefig(path_to_experiment+'/source_queue_len.png', bbox_inches='tight')
+# plt.savefig(path_to_experiment+'/queue_makeup.png', bbox_inches='tight')
+
+# ################## plot source queues lengths ##################
+# fig = plt.figure()
+# fids = [0, 1, 2]
+# sourceq_col_offset = 13
+# for fid in fids:
+#     plt.plot(trace_data[:,0], trace_data[:,fid+sourceq_col_offset], label='fid '+str(fid))
+# axes = plt.gca()
+# axes.set_xlim([0.48, 0.6])
+# plt.title('source queue lengths')
+# plt.xlabel('time (s)')
+# plt.ylabel('packets')
+# plt.legend()
+# # fig.show()
+# plt.savefig(path_to_experiment+'/source_queue_len.png', bbox_inches='tight')
 

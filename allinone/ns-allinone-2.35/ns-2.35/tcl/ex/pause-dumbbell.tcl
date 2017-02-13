@@ -25,7 +25,7 @@ set throughputTraceStart 0.01
 set f0Start 0.001
 set f1Start 0.1
 set f2Start 0.5
-set burstInterval 0.005
+set burstInterval 0.01
 set burstSize 1000
 set pauseThreshold 20
 set resumeThreshold 5

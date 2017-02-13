@@ -111,11 +111,13 @@ void DestHashClassifier::deque_callback(Packet* p) {
 			if (input_counters_.at(input_port) < resume_threshold_ and
 				is_paused(input_port)) {
 				if (input_port != -1) {
-					// printf("%f: Sending resume packet to %d, since input_counters = %d and is_paused=%d\n",
-					// 	Scheduler::instance().clock(),
-					// 	input_port,
-					// 	input_counters_[input_port],
-					// 	is_paused(input_port));
+					if (input_port == 4) {
+					printf("%f: Sending resume packet to %d, since input_counters = %d and is_paused=%d\n",
+						Scheduler::instance().clock(),
+						input_port,
+						input_counters_[input_port],
+						is_paused(input_port));
+					}
 					auto unpause_pkt = generate_pause_pkt(input_port, PauseAction::RESUME);
 					/* no point sending a pause to an agent */
 					int slot = lookup(unpause_pkt);
@@ -178,6 +180,10 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 	if (hdr_cmn::access(p)->ptype() == PT_PAUSE) {
 		if (hdr_pause::access(p)->class_pause_durations_[0] == 0) {
 			/* if you are receiving a resume */
+			if (node_id_ == 4) {
+				printf("%f: Received resume packet\n",
+						Scheduler::instance().clock());
+			}
 			const auto src_addr = hdr_ip::access(p)->saddr();
 			assert(src_addr != node_id_);
 
@@ -258,11 +264,13 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 				slot_[slot]->recv(pause_pkt);
 				paused_[input_port] = true;
 				pause_count_++;
-				// printf("%f: Sending pause packet to %d, since input_counters = %d and is_paused=%d\n",
-				// 		Scheduler::instance().clock(),
-				// 		input_port,
-				// 		input_counters_[input_port],
-				// 		is_paused(input_port));
+				if (input_port == 4) {
+					printf("%f: Sending pause packet to %d, since input_counters = %d and is_paused=%d\n",
+						Scheduler::instance().clock(),
+						input_port,
+						input_counters_[input_port],
+						is_paused(input_port));
+				}
 				/* schedule the pause renewal check */
 				Scheduler& s = Scheduler::instance();
 				s.schedule(&pause_renewals_[input_port], &pause_renewals_[input_port].e_, hdr_pause::access(pause_pkt)->class_pause_durations_[0]);
