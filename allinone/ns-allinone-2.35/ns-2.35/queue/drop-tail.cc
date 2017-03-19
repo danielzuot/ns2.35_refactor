@@ -89,6 +89,9 @@ void DropTail::enque(Packet* p)
                 Queue::updateStats(qib_?q_->byteLength():q_->length());
 	}
 
+    //printf("qlim_ = %d, qib_ = %d, mean_pktsize_ = %d\n", qlim_, qib_, mean_pktsize_);
+            i
+
 	int qlimBytes = qlim_ * mean_pktsize_;
 	if ((!qib_ && (q_->length() + 1) >= qlim_) ||
   	(qib_ && (q_->byteLength() + hdr_cmn::access(p)->size()) >= qlimBytes)){
@@ -97,7 +100,58 @@ void DropTail::enque(Packet* p)
 			q_->enque(p);
 			Packet *pp = q_->deque();
 			drop(pp);
-		} else {
+		} 
+        else if (drop_prio_) {
+            Packet *max_pp = p
+            int max_prio = 0;
+
+            q_enqueue(p);
+            q_->resetIterator();
+            for (Packet *pp = q_->getNext(); pp != 0; pp = q_->getNext()) {
+                if (!qib_ || ( q_->byteLength() - hdr_cmn::access(pp)->size() < qlimBytes)) {
+                    hdr_ip* h = hdr_ip::access(pp);
+                    int prio = h->prio();
+                    if (prio >= max_prio) {
+                        max_pp = pp;
+                        max_prio = prio;
+                    }
+                }
+            }
+            q_->remove(max_pp);
+            drop(max_pp);
+        }
+        else if (drop_smart_) {
+            Packet *max_pp = p;
+            int max_count = 0;
+
+            q_->enqueue(p);
+            q_->resetIterator();
+            for (Packet *pp = q_->getNext(); pp != 0; pp = q_->getNext()) {
+                hdr_ip* h = hdr_ip::access(pp);
+                FlowKey fkey;
+                fkey.src = h->saddr();
+                fkey.dst = h->daddr();
+                fkey.fid = h->flowid();
+
+                char* fkey_buf = (char*) &fkey;
+                int length = sizeof(fkey);
+                string fkey_string(fkey_buf, length);
+
+                std::tr1::hash<string> string_hasher;
+                size_t signature = string_hasher(fkey_string);
+
+                if (sq_counts_.find(signature) != sq_counts_.end()) {
+                    int count = sq_counts_[signature];
+                    if (count > max_count) {
+                        max_count = count;
+                        max_pp = pp;
+                    }
+                }
+            }
+            q_->remove(max_pp);
+            /* bunch of stuff about FlowKey and dropping something else instead*/
+            drop(max_pp);
+        else {
 			drop(p);
 		}
 	} else {
@@ -128,12 +182,92 @@ void DropTail::shrink_queue()
 
 Packet* DropTail::deque()
 {
-        if (summarystats && &Scheduler::instance() != NULL) {
-                Queue::updateStats(qib_?q_->byteLength():q_->length());
+    if (summarystats && &Scheduler::instance() != NULL) {
+        Queue::updateStats(qib_?q_->byteLength():q_->length());
+    }
+    //printf("drop_smart_ = %d, sq_limit = %d\n", drop_smart_, sq_limit_);
+    /* Shuang: deque the packet with the highest priority */
+    if (deque_prio_) {
+        q_->resetIterator();
+        Packet *p = q_->getNext();
+        int highest_prio_;
+        if (p != 0) {
+            highest_prio_ = hdr_ip::access(p)->prio();
+        } else {
+            return 0;
         }
-    auto ret = q_->deque();
-    if (classifier_ != nullptr) classifier_->deque_callback(ret);
-	return ret;
+        for (Packet *pp = q_->getNext(); pp != 0; pp = q_->getNext()) {
+            hdr_ip* h = hdr_ip:access(pp);
+            int prio = h->prio();
+            //deque from the head
+            if (prio < highest_prio_) {
+                p = pp;
+                highest_prio_ = prio;
+            }
+        }
+        if (keep_order_) {
+            q_->resetIterator();
+            hdr_ip* hp = hdr_ip::access(pp);
+            for (Packet *pp = q_->getNext(); pp != p; pp = q_->getNext()) {
+                hdr_ip* h = hdr_ip::access(pp);
+                if (h->saddr() == hp->saddr()
+                 && h->daddr() == hp->daddr()
+                 && h->flowid() == hp->flowid()) {
+                    p = pp;
+                    break;
+                }
+            }
+        }
+
+        /* if p->flowid() == 1, do some stuff*/
+
+        q_->remove(p);
+        return p
+    } else {
+        if (drop_smart_) {
+            Packet *p = q_->deque();
+            if (p) {
+                hdr_ip* h = hdr_ip::access(p);
+                FlowKey fkey;
+                fkey.src = h->saddr();
+                fkey.dst = h->daddr();
+                fkey.fid = h->flowid();
+
+                char* fkey_buf = (char*) &fkey;
+                int length = sizeof(fkey);
+                string fkey_string(fkey_buf, length);
+
+                std::tr1::hash<string> string_hasher;
+                size_t signature = string_hasher(fkey_string);
+                sq_queue_.push(signature);
+
+                if (sq_counts_.find(signature) != sq_counts_.end()) {
+                    sq_counts_[signature]++;
+                    //printf("%s packet with signature %d, count = %d, qsize = %d\n", this->name(), signature, sq_counts_[signature], sq_queue_.size());
+                }
+                else {
+                    sq_counts_[signature] = 1;
+                    //printf("%s firstpacket with signature %d, count = %d, qsize = %d\n", this->name(), signature, sq_counts_[signature], sq_queue_.size());
+                }
+
+                if (sq_queue_.size() > sq_limit_) {
+                    //printf("%s we are full %d %d\n", this->name(), sq_counts_.size(), sq_queue_.size());
+                    size_t temp = sq_queue_.front();
+                    sq_queue_.pop();
+                    sq_counts_[temp]--;
+                    if (sq_counts_[temp] == 0)
+                        sq_counts_.erase(temp);
+
+                    //printf("%s removed front sig = %d, no longer full %d %d\n", this->name(), temp, sq_counts_.size(), sq_queue_.size());
+                }
+            }
+            return p;
+        } else {
+            auto ret = q_->deque();
+            if (classifier_ != nullptr) classifier_->deque_callback(ret);
+	        return ret;
+        }
+    }
 }
 
 void DropTail::print_summarystats()
