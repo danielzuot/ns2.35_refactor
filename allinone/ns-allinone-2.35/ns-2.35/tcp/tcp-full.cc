@@ -1,74 +1,4 @@
-/* -*-	Mode:C++; c-basic-offset:8; tab-width:8; indent-tabs-mode:t -*- */
-
-/*
- * Copyright (c) Intel Corporation 2001. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
- * Copyright (c) 1997, 1998 The Regents of the University of California.
- * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- * 	This product includes software developed by the Network Research
- * 	Group at Lawrence Berkeley National Laboratory.
- * 4. Neither the name of the University nor of the Laboratory may be used
- *    to endorse or promote products derived from this software without
- *    specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-
-/*
- *
- * Full-TCP : A two-way TCP very similar to the 4.4BSD version of Reno TCP.
- * This version also includes variants Tahoe, NewReno, and SACK.
- *
- * This code below has received a fairly major restructuring (Aug. 2001).
- * The ReassemblyQueue structure is now removed to a separate module and
- * entirely re-written.
- * Also, the SACK functionality has been re-written (almost) entirely.
- * -KF [kfall@intel.com]
- *
- * This code below was motivated in part by code contributed by
- * Kathie Nichols (nichols@baynetworks.com).  The code below is based primarily
- * on the 4.4BSD TCP implementation. -KF [kfall@ee.lbl.gov]
- *
- * Kathie Nichols and Van Jacobson have contributed significant bug fixes,
- * especially with respect to the the handling of sequence numbers during
- * connection establishment/clearin.  Additional fixes have followed
- * theirs.
- *
- * Fixes for gensack() and ReassemblyQueue::add() contributed by Richard 
+/* 
  * Mortier <Richard.Mortier@cl.cam.ac.uk>
  *
  * Some warnings and comments:
@@ -117,6 +47,7 @@ static const char rcsid[] =
 #include "flags.h"
 #include "random.h"
 #include "template.h"
+#include "math.h"
 
 #ifndef TRUE
 #define	TRUE 	1
@@ -171,6 +102,21 @@ public:
 	}
 } class_sack_full;
 
+static class MinTcpClass : public TclClass {
+    public:
+        MinTcpClass() : TclClass("Agent/TCP/FullTcp/Sack/MinTCP") {}
+        TclObject* create(int, const char*const*) {
+            return (new MinTcpAgent());
+        }
+} class_min_full;
+
+static class DDTcpClass : public TclClass {
+    public:
+        DDTcpClass() : TclClass("Agent/TCP/FullTcp/Sack/DDTCP") {}
+        TclObject* create(int, const char*const*) {
+            return (new DDTcpAgent());
+} class_dd_full;
+
 /*
  * Delayed-binding variable linkage
  */
@@ -200,7 +146,24 @@ FullTcpAgent::delay_bind_init_all()
         delay_bind_init_one("debug_");
         delay_bind_init_one("spa_thresh_");
 
-	TcpAgent::delay_bind_init_all();
+    //Mohammad
+    delay_bind_init_one("flow_remaining_");
+    delay_bind_init_one("dynamic_dupack_");
+
+    //Shuang
+    delay_bind_init_one("prio_scheme_");
+    delay_bind_init_one("prio_num_");
+    delay_bind_init_one("prio_cap0");
+    delay_bind_init_one("prio_cap1");
+    delay_bind_init_one("prio_cap2");
+    delay_bind_init_one("prio_cap3");
+    delay_bind_init_one("prio_cap4");
+    delay_bind_init_one("prio_cap5");
+    delay_bind_init_one("prio_cap6");
+	delay_bind_init_one("deadline");
+    delay_bind_init_one("early_terminated_");
+    
+    TcpAgent::delay_bind_init_all();
        
       	reset();
 }
@@ -230,6 +193,20 @@ FullTcpAgent::delay_bind_dispatch(const char *varName, const char *localName, Tc
         if (delay_bind(varName, localName, "ecn_syn_wait_", &ecn_syn_wait_, tracer)) return TCL_OK;
         if (delay_bind_bool(varName, localName, "debug_", &debug_, tracer)) return TCL_OK;
 
+        if (delay_bind_bool(varName, localName, "flow_remaining_", &flow_remaining_, tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "dynamic_dupack_", &dynamic_dupack_, tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "prio_scheme_", &prio_scheme_, tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "prio_num_", &prio_num_, tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "prio_cap0", &prio_cap_[0], tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "prio_cap1", &prio_cap_[1], tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "prio_cap2", &prio_cap_[2], tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "prio_cap3", &prio_cap_[3], tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "prio_cap4", &prio_cap_[4], tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "prio_cap5", &prio_cap_[5], tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "prio_cap6", &prio_cap_[6], tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "prio_cap_", &prio_cap_, tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "deadline", &deadline, tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "early_terminated_", &early_terminated_, tracer)) return TCL_OK;
         return TcpAgent::delay_bind_dispatch(varName, localName, tracer);
 }
 
@@ -297,7 +274,12 @@ FullTcpAgent::command(int argc, const char*const* argv)
 			advance_bytes(atoi(argv[2]));
 			return (TCL_OK);
 		}
-	}
+        //Mohammad
+        if (strcmp(argv[1], "get-flow") == 0) {
+            flow_remaining_ = atoi(argv[2])
+	        return (TCL_OK);
+        }
+    }
 	if (argc == 4) {
 		if (strcmp(argv[1], "sendmsg") == 0) {
 			sendmsg(atoi(argv[2]), argv[3]);
@@ -349,7 +331,9 @@ FullTcpAgent::advanceby(int np)
 void
 FullTcpAgent::advance_bytes(int nb)
 {
-
+    // Shuang: hardcode
+        cwnd_ = initial_window();
+    //  ssthresh_ = cwnd_;
 	//
 	// state-specific operations:
 	//	if CLOSED or LISTEN, reset and try a new active open/connect
@@ -357,13 +341,16 @@ FullTcpAgent::advance_bytes(int nb)
 	//	if SYN_SENT or SYN_RCVD, just queue
 	//	if above ESTABLISHED, we are closing, so don't allow
 	//
-
+    start_time = now();
+    early_terminated_ = 0;
 	switch (state_) {
 
 	case TCPS_CLOSED:
 	case TCPS_LISTEN:
                 reset();
+                startseq_ = iss_;
                 curseq_ = iss_ + nb;
+                seq_bound_ = -1;
                 connect();              // initiate new connection
 		break;
 
@@ -372,6 +359,8 @@ FullTcpAgent::advance_bytes(int nb)
 	case TCPS_SYN_RECEIVED:
                 if (curseq_ < iss_) 
                         curseq_ = iss_; 
+                startseq_ = curseq_;
+                seq_bound_ = -1;
                 curseq_ += nb;
 		break;
 
@@ -613,6 +602,7 @@ FullTcpAgent::reset()
 	rtt_init();		// zero rtt, srtt, backoff
 
 	last_ack_sent_ = -1;
+    flow_remaining_ = -1; //Mohammad
 	rcv_nxt_ = -1;
 	pipe_ = 0;
 	rtxbytes_ = 0;
@@ -635,7 +625,12 @@ FullTcpAgent::reset()
                 ecn_syn_next_ = 1;
         else
                 ecn_syn_next_ = 0;
-
+    //Shuang
+    prob_mode_ = false;
+    prob_count_ = 0;
+    last_sqtotal_ = 0;
+    deadline = 0;
+    early_terminated_ = 0;
 }
 
 /*
@@ -821,6 +816,42 @@ FullTcpAgent::ack_action(Packet* p)
 	FullTcpAgent::pack_action(p);
 }
 
+int
+FullTcpAgent::set_prio(int seq, int maxseq) {
+    int max = 100 * 1460;
+    int prio;
+    if (prio_scheme_ = 0) {
+        if ( seq - startseq_ > max)
+            prio = max;
+        else
+            prio = seq - startseq_;
+    }
+    if (prio_scheme_ = 1) 
+        prio = maxseq - startseq_;
+    if (prio_scheme_ = 2)
+        prio = maxseq - seq;
+    if (prio_scheme_ = 3)
+        prio = seq - startseq_;
+
+    if (prio_num_ == 0)
+        return prio
+    else
+        return calPrio(prio);
+}
+
+int
+FullTcpAgent::calPrio(int prio){
+    if (prio_num_ != 2 && prio_num_ != 4 && prio_num_ != 8) {
+        fprintf(stderr, "wrong number or priority class %d\n", prio_num_);
+        return 0;
+    }
+    for (int i = 1; i < prio_num_; i++) {
+        if (prio <= prio_cap_[i * 8 / prio_num_ - 1]) {
+            return i - 1;
+        }
+    }
+    return prio_num_ - 1;
+}
 
 /*
  * sendpacket: 
@@ -839,6 +870,7 @@ FullTcpAgent::sendpacket(int seqno, int ackno, int pflags, int datalen, int reas
         if (!p) p = allocpkt();
         hdr_tcp *tcph = hdr_tcp::access(p);
 	hdr_flags *fh = hdr_flags::access(p);
+    hdr_ip* iph = hdr_ip::access(p);
 
 	/* build basic header w/options */
 
@@ -849,6 +881,9 @@ FullTcpAgent::sendpacket(int seqno, int ackno, int pflags, int datalen, int reas
 	tcph->sa_length() = 0;    // may be increased by build_options()
         tcph->hlen() = tcpip_base_hdr_size_;
 	tcph->hlen() += build_options(tcph);
+    //Shuang: reduce header length
+    //tcph->hlen() = 1;
+    //iph->prio() = curseq_ - seqno + 10;
 
 	/*
 	 * Explicit Congestion Notification (ECN) related:
@@ -873,7 +908,7 @@ FullTcpAgent::sendpacket(int seqno, int ackno, int pflags, int datalen, int reas
 	}
 
 	// For DCTCP, ect should be set on all packets
-	if (dctcp_)
+	if (dctcp_ || ecnhat_)
 		fh->ect() = ect_;
 
 	if (ecn_ && ect_ && recent_ce_ ) { 
@@ -901,8 +936,11 @@ FullTcpAgent::sendpacket(int seqno, int ackno, int pflags, int datalen, int reas
         hdr_cmn *ch = hdr_cmn::access(p);
         ch->size() = datalen + tcph->hlen();
 
-        if (datalen <= 0)
+        if (datalen <= 0) {
                 ++nackpack_;
+                //Shuang: artificially reduce ack size
+                //ch->size() = 1;
+        }
         else {
                 ++ndatapack_;
                 ndatabytes_ += datalen;
@@ -919,8 +957,50 @@ FullTcpAgent::sendpacket(int seqno, int ackno, int pflags, int datalen, int reas
 //printf("%f(%s)[state:%s]: sending pkt ", now(), name(), statestr(state_));
 //prpkt(p);
 //}
+    if (deadline > 0)
+        iph->prio_type() = 1;
+    if (datalen > 0) {
+        //iph->prio_type() = 0;
+        //iph->prio() = set_prio(seqno, curseq_);
+        /*Shuang: prio dropping*/
+        if (deadline == 0) {
+            iph->prio() = set_prio(seqno, curseq_);
+            iph->prio_type() = 0;
+        } else {
+            int tleft = deadline - int((now() - start_time) * 1e6);
+            iph->prio_type() = 1;
+            iph->prio() = deadline + int(start_time * 1e6);
+            if (tleft < 0 || byterm() * 8 / 1e4 > tleft) {
+                iph->prio_type() = 0;
+                iph->prio() = (1 << 30);
+            } else {
+//              iph->prio() = iph->prio() / 40 * 1000 + set_prio(seqno, curseq_) / 1460;
+            }
+        }
+    
 
-	send(p, 0);
+        /* Mohammad: this is deprecated
+        * it was for path-aware multipath
+        * congestion control experiments */
+        //Shuang: delete it
+        //iph->prio() = fid_;
+    
+        /* Mohammad: inform pacer (TBF) that
+        * this connection received an EcnEcho.
+        * this is a bit hacky, but necessary
+        * for now since the TBF class doesn't see the
+        * ACKs. */
+
+        if (informpacer)
+            iph->gotecnecho = 1;
+        else
+            iph->gotecnecho = 0;
+
+        informpacer = 0;
+        //abd
+    }
+
+    send(p, 0);
 
 	return;
 }
@@ -981,6 +1061,9 @@ FullTcpAgent::foutput(int seqno, int reason)
 				curseq_ - highest_ack_ + 1;
 
 	int win = window() * maxseg_;	// window (in bytes)
+    if (prob_mode_ && win > 1)
+        win = 1;
+
 	int off = seqno - highest_ack_;	// offset of seg in window
 	int datalen;
 	//int amtsent = 0;
@@ -999,8 +1082,10 @@ FullTcpAgent::foutput(int seqno, int reason)
 	else
 		datalen = min(buffered_bytes, win) - off;
 
-        if ((signal_on_empty_) && (!buffered_bytes) && (!syn))
-	                bufferempty();
+    // lots of commented out stuff here, not copying over
+
+    if ((signal_on_empty_) && (!buffered_bytes) && (!syn))
+	    bufferempty();
 
 	//
 	// in real TCP datalen (len) could be < 0 if there was window
@@ -1072,7 +1157,10 @@ FullTcpAgent::foutput(int seqno, int reason)
 		//	only happen for tiny windows)
 		if (datalen >= ((wnd_ * maxseg_) / 2.0))
 			goto send;
-	}
+	    //Shuang
+        if (datalen == 1 && prob_mode_)
+            goto send;
+    }
 
 	if (need_send())
 		goto send;
@@ -1188,6 +1276,8 @@ send:
 	//	and adjusted for SYNs and FINs which use up one number
 
 	int highest = seqno + reliable;
+    if (highest > ecnhat_maxseq)
+        ecnhat_maxseq = highest;
 	if (highest > dctcp_maxseq) 
 		dctcp_maxseq = highest;
 	if (highest > maxseq_) {
@@ -1281,6 +1371,9 @@ int
 FullTcpAgent::send_allowed(int seq)
 {
         int win = window() * maxseg_;
+        //Shuang: probe_mode
+        if (prob_mode_ && win > 1)
+            win = 1;
         int topwin = curseq_; // 1 seq number past the last byte we can send
 
         if ((topwin > highest_ack_ + win) || infinite_send_)
@@ -1304,6 +1397,9 @@ FullTcpAgent::send_allowed(int seq)
 void
 FullTcpAgent::newack(Packet* pkt)
 {
+    //Shuang: cancel prob_mode_ when receiving an ack
+    prob_mode_ = false;
+    prob_count_ = 0;
 	hdr_tcp *tcph = hdr_tcp::access(pkt);
 
 	register int ackno = tcph->ackno();
@@ -1455,7 +1551,9 @@ FullTcpAgent::need_send()
 	int spa = (spa_thresh_ > 0 && ((rcv_nxt_ - irs_)  < spa_thresh_)) ?
 		1 : segs_per_ack_;
 		
-	return ((rcv_nxt_ - last_ack_sent_) >= (spa * maxseg_));
+    //Shuang
+	return ((rcv_nxt_ - last_ack_sent_) > 0);
+    //return ((rcv_nxt_ - last_ack_sent_) >= (spa * maxseg_));
 }
 
 /*
@@ -1482,6 +1580,7 @@ FullTcpAgent::idle_restart()
 	}
 
 	return (tao > t_rtxcur_);  // verify this CHECKME
+    //return (tao > (int(t_srtt_) >> T_SRTT_BITS)*tcp_tick_); //Mohammad
 }
 
 /*
@@ -1517,6 +1616,10 @@ FullTcpAgent::set_initial_window()
 void
 FullTcpAgent::recv(Packet *pkt, Handler*)
 {
+    //Shuang: cancel probe mode
+    prob_mode_ = false;
+    prob_count_ = 0;
+
 	hdr_tcp *tcph = hdr_tcp::access(pkt);	// TCP header
 	hdr_cmn *th = hdr_cmn::access(pkt);	// common header (size, etc)
 	hdr_flags *fh = hdr_flags::access(pkt);	// flags (CWR, CE, bits)
@@ -1561,6 +1664,11 @@ FullTcpAgent::recv(Packet *pkt, Handler*)
 		goto drop;
 	}
 
+    /* Shuang: if fid does not match, drop packets */
+    if (fid_ != hdr_ip::access(pkt)->fid_) {
+        goto drop;
+    }
+
         /*
          * Process options if not in LISTEN state,
          * else do it below
@@ -1585,6 +1693,15 @@ FullTcpAgent::recv(Packet *pkt, Handler*)
 		delack_timer_.resched(delack_interval_ * (last + 1.0) - now());
 	}
 	*/
+
+    if (ecnhat_)
+        update_ecnhat_alpha(pkt);
+
+    /* Mohammad: check if we need to inform
+     * pacer of ecnecho.
+     */
+    if (!(tiflags & TH_SYN) && fh->ecnecho())
+        informpacer = 1;
 
 	if (dctcp_) 
 		update_dctcp_alpha(pkt);
@@ -1616,7 +1733,7 @@ FullTcpAgent::recv(Packet *pkt, Handler*)
 		//
 
 	    	if (ecn_) {
-			if (dctcp_) { // DCTCP	       
+			if (dctcp_ || ecnhat_) { // DCTCP	       
 				if (fh->ce() && fh->ect()) {
 					// no CWR from peer yet... arrange to
 					// keep sending ECNECHO
@@ -1677,9 +1794,9 @@ FullTcpAgent::recv(Packet *pkt, Handler*)
 			//	this routine scans all tcpcb's looking for
 			//	DELACK segments and when it finds them
 			//	changes DELACK to ACKNOW and calls tcp_output()
-			
+
 			/* DCTCP receiver state machine */
-		        if (dctcp_ && ce_transition && ((rcv_nxt_ - last_ack_sent_) > 0)) {
+		        if ((dctcp_ || ecnhat_) && ce_transition && ((rcv_nxt_ - last_ack_sent_) > 0)) {
 				// Must send an immediate ACK with with previous ECN state 
 				// before transitioning to new state
 				flags_ |= TF_ACKNOW;
@@ -1693,6 +1810,15 @@ FullTcpAgent::recv(Packet *pkt, Handler*)
 			// Mohammad
 			delack_timer_.resched(delack_interval_);
 			recvBytes(datalen); // notify application of "delivery"
+
+            if (flow_remaining_ > 0) {
+                flow_remaining_ -= datalen;
+            }
+
+            if (flow_remaining_ == 0) {
+                flags_ |= TF_ACKNOW;
+                flow_remaining_ = -1;
+            }
 			//
 			// special code here to simulate the operation
 			// of a receiver who always consumes data,
@@ -2185,7 +2311,7 @@ trimthenstep6:
                 // cong_action bit
                 // 
                 if (ecn_) {
-			if (dctcp_) { // Mohammad		       
+			if (dctcp_ || ecnhat_) { // Mohammad		       
 				if (fh->ce() && fh->ect()) {
 					// no CWR from peer yet... arrange to
 					// keep sending ECNECHO
@@ -2234,7 +2360,12 @@ trimthenstep6:
 		if (ackno <= highest_ack_) {
 			// a pure ACK which doesn't advance highest_ack_
 			if (datalen == 0 && (!dupseg_fix_ || !dupseg)) {
-
+                //Mohammad: check for dynamic dupack mode.
+                if (dynamic_dupack_ > 0.0) {
+                    tcprexmtthresh_ = int(dynamic_dupack_ * window());
+                    if (tcprexmtthresh_ < 3)
+                        tcprexmtthresh_ = 3;
+                }
                                 /*
                                  * If we have outstanding data
                                  * this is a completely
@@ -2480,7 +2611,7 @@ step6:
 			// require being in ESTABLISHED state)
 			
 			/* Mohammad: For DCTCP state machine */
-		        if (dctcp_ && ce_transition && ((rcv_nxt_ - last_ack_sent_) > 0)) {
+		        if ((dctcp_ || ecnhat_) && ce_transition && ((rcv_nxt_ - last_ack_sent_) > 0)) {
 				// Must send an immediate ACK with with previous ECN state 
 				// before transitioning to new state
 				flags_ |= TF_ACKNOW;
@@ -2498,8 +2629,15 @@ step6:
 
 			// give to "application" here
 			// in "real" TCP, this is sbappend() + sorwakeup()
-			if (datalen)
+			if (datalen) {
 				recvBytes(datalen); // notify app. of "delivery"
+                if (flow_remaining_ > 0)
+                    flow_remaining_ -= datalen; //Mohammad
+                if (flow_remaining_ == 0) {
+                    flags_ |= TF_ACKNOW;
+                    flow_remaining_ = -1;
+                }
+            }
 			needoutput = need_send();
 		} else {
 			// see the "tcp_reass" function:
@@ -2520,6 +2658,12 @@ step6:
 				// been a hole fill.  In this case, there
 				// is something to give to application
 				recvBytes(rcv_nxt_ - rcv_nxt_old_);
+                if (flow_remaining_ > 0) {
+                    flow_remaining_ -= datalen; //Mohammad
+                if (flow_remaining_ == 0) {
+                    flags_ |= TF_ACKNOW;
+                    flow_remaining_ = -1;
+                }
 			}
 			flags_ |= TF_ACKNOW;
 
@@ -2709,6 +2853,8 @@ FullTcpAgent::timeout_action()
 	}
 	reset_rtx_timer(1);
 	t_seqno_ = (highest_ack_ < 0) ? iss_ : int(highest_ack_);
+    ecnhat_recalc_seq = t_seqno_;
+    ecnhat_maxseq = ecnhat_recalc_seq;
 	dctcp_alpha_update_seq = t_seqno_;
 	dctcp_maxseq = dctcp_alpha_update_seq;
 	fastrecov_ = FALSE;
@@ -2846,6 +2992,9 @@ FullTcpAgent::process_sack(hdr_tcp*)
 	return;
 }
 
+int FullTcpAgent::byterm() {
+    return curseq_ - int(highest_ack_) - window() * maxseg_;
+}
 
 /*
  * ****** Tahoe ******
@@ -2968,6 +3117,42 @@ NewRenoFullTcpAgent::ack_action(Packet* p)
  * "pipe" style control until recovery is complete
  */
 
+int
+SackFullTcpAgent::set_prio(int seq, int maxseq) {
+    int max = 100 * 1460;
+    int prio;
+    if (prio_scheme_ == 0) {
+        if ( seq - startseq_ > max)
+            prio = max;
+        else
+            prio = seq - startseq_;
+    }
+    if (prio_scheme_ == 1)
+        prio = maxseq - startseq_;
+    if (prio_scheme_ == 2) {
+        if (maxseq - int(highest_ack_) - sq_.total() + 10 < 0)
+            prio = 0;
+        else
+            prio = maxseq - int(highest_ack_) - sq_.total() + 10;
+    }
+    if (prio_scheme_ == 3)
+        prio = seq - startseq_;
+    if (prio_scheme_ == 4) { // in batch
+        if (int(highest_ack_) >= seq_bound_) {
+            seq_bound_ = maxseq_;
+            if (maxseq - int(highest_ack_) - sq_.total() + 10 < 0)
+                last_prio_ = 0;
+            else
+                last_prio_ = maxseq - int(highest_ack) 0 sq_.total() + 10;
+        }
+        prio = last_prio_;
+    }
+
+    if (prio_num_ == 0)
+        return prio;
+    else
+        return calPrio(prio);
+
 void
 SackFullTcpAgent::reset()
 {
@@ -3015,7 +3200,7 @@ SackFullTcpAgent::dupack_action()
 		 */
 		last_cwnd_action_ = CWND_ACTION_DUPACK;
 		/* Mohammad: cut window by half when we have 3 dup ack */
-		if (dctcp_) 
+		if (dctcp_ || ecnhat_) 
 			slowdown(CLOSE_SSTHRESH_HALF|CLOSE_CWND_HALF); 
 		cancel_rtx_timer();
 		rtt_active_ = FALSE;
@@ -3077,6 +3262,7 @@ SackFullTcpAgent::ack_action(Packet*)
 //printf("%f: EXITING fast recovery, recover:%d\n",
 //now(), recover_);
 	fastrecov_ = pipectrl_ = FALSE;
+    fastrecov_ = FALSE;
         if (!sq_.empty() && sack_min_ < highest_ack_) {
                 sack_min_ = highest_ack_;
                 sq_.cleartonxt();
@@ -3115,6 +3301,8 @@ SackFullTcpAgent::timeout_action()
 {
 	FullTcpAgent::timeout_action();
 
+    /* there was a bunch of stuff with recover_ and resetting timeout progress, commented out*/
+
 	//
 	// original SACK spec says the sender is
 	// supposed to clear out its knowledge of what
@@ -3140,6 +3328,7 @@ SackFullTcpAgent::process_sack(hdr_tcp* tcph)
 	// in the pkt.  Insert each block range
 	// into the scoreboard
 	//
+    last_sqtotal_ = sq_.total();
 
 	if (max_sack_blocks_ <= 0) {
 		fprintf(stderr,
@@ -3161,6 +3350,7 @@ SackFullTcpAgent::process_sack(hdr_tcp* tcph)
 		sq_.add(tcph->sa_left(i), tcph->sa_right(i), 0);  
 	}
 
+    cur_sqtotal_ = sq_.total();
 	return;
 }
 
@@ -3247,11 +3437,200 @@ SackFullTcpAgent::nxt_tseq()
 		} else if (fcnt <= 0)
 			break;
 		else {
-			seq += maxseg_;
+            //Shuang; probe
+            if (prob_cap_ != 0) {
+                seq++;
+            } else {
+			    seq += maxseg_;
+            }
 		}
 	}
 //if (int(t_seqno_) > 1)
 //printf("%f: nxt_tseq<top> returning %d\n",
 //now(), int(t_seqno_));
 	return (t_seqno_);
+}
+
+int SackFullTcpAgent::byterm() {
+    return curseq_ - int(highest_ack_) - sq_.total() - window() * mexseg_;
+}
+
+void MinTcpAgent::timeout_action() {
+    //Shuang: probe count when cwnd = 1
+    if (prob_cap_ != 0) {
+        prob_count_++;
+        if (prob_count_ == prob_cap_) {
+            prob_mode_ = true;
+        }
+        //Shuang: h_seqno_?
+        h_seqno_ = highest_ack_;
+    }
+
+    SackFullTcpAgent::timeout_action();
+}
+
+double
+MinTcpAgent::rtt_timeout() {
+    return mintro_;
+}
+
+void DDTcpAgent::slowdown(int how) {
+
+    double decrease; /* added for highspeed - sylvia */
+    double win, halfwin, decreasewin;
+    int slowstart = 0;
+    ++ncwndcuts_;
+    if (!(how & TCP_IDLE) && !(how & NO_OUTSTANDING_DATA)){
+        ++ncwndcuts1_;
+    }
+
+    //Shuang: deadline-aware
+    double penalty = ecnhat_alpha_;
+    if (deadline != 0) {
+        double tleft = deadline/1e6 - (now() - start_time);
+        if (tleft < 0) {
+            tleft = 1e10;
+        }
+        double rtt = int(t_srtt_ >> T_SRTT_BITS) * tcp_tick_;
+        double Tc = byterm() / (0.75 * cwnd_ * maxseg_) * rtt;
+        double d = Tc/tleft;
+        if (d > 2) d = 2;
+        if (d < 0.5) d = 0.5;
+        if (d >= 0)
+            penalty = pow(penalty, d);
+    } else if (penalty > 0) {
+        //non-deadline->TCP
+        penalty = 1;
+    }
+
+    //ecnhat_alpha_ = 0.07
+    // we are in slowstart for sure if cwnd < ssthresh
+    if (cwnd_ < ssthresh_)
+        slowstart = 1;
+    if (precision_reduce_) {
+        halfwin = window() / 2;
+        if (wnd_option_ == 6) {
+            /* binomial controls */
+            decreasewin = windowd() - (1.0-decrease_num_)*(pow(windowd(), l_parameter_));
+        } else if (wnd_option_ == 8 && (cwnd_ > low_window_)) {
+            /* experimental highspeed TCP */
+            decrease = decrease_param();
+            decrease_num_ = decrease;
+            decreasewin = windowd() - (decrease * windowd());
+        } else {
+            decreasewin = decrease_num_ * windowd();
+        }
+        win = windowd();
+    } else {
+        int temp;
+        temp = (int)(window() / 2);
+        halfwin = (double) temp;
+        if (wnd_option_ == 6) {
+            /* binomial controls */
+            temp = (int)(window() - (1.0-decrease_num_)*pow(window(), l_parameter_));
+        } else if ((wnd_option_ == 8) && (cwnd_ > low_window_)) {
+            /* experimental highspeed TCP */
+            decrease = decrease_param();
+            decrease_num_ = decrease;
+            temp = (int)(windowd() - (decrease * windowd()));
+        } else {
+            temp = (int)(decrease_num_ * windowd());
+        }
+        decreasewin = (double) temp;
+        win = (double) window();
+    }
+    if (how & CLOSE_SSTHRESH_HALF) {
+        // For the first decrease, decrease by half
+        // even for non-standard values of decrease_num_
+        if (first_decrease_ == 1 || slowstart ||
+            last_cwnd_action_ == CWND_ACTION_TIMEOUT) {
+            // Do we really want halfwin instead of decreasewin
+            // after a timeout?
+            ssthresh_ = (int) halfwin;
+        } else {
+            ssthresh_ = (int) decreasewin;
+        }
+    else if (how & CLOSE_SSTHRESH_ECNHAT)
+        ssthresh_ = (int) ((1 - penalty/2.0) * windowd());
+    else if (how & THREE_QUARTER_SSTHRESH) {
+        if (ssthresh_ < 3*cwnd_/4)
+            ssthresh_ = (int)(3*cwnd_/4);
+    }
+    if (how & CLOSE_CWND_HALF) {
+        // For the first decrease, decrease by half
+        // even for non-standard values of decrease_num_.
+        if (first_decrease_ == 1 || slowstart || decrease_num_ == 0.5) {
+            cwnd_ = halfwin;
+        } else
+            cwnd_ = decreasewin;
+    } else if (how & CLOSE_CWND_ECNHAT) {
+        cwnd_ = (1 - penalty/2.0) * windowd();
+        if (cwnd_ < 1)
+            cwnd_ = 1;
+    } else if (how & CWND_HALF_WITH_MIN) {
+        // We have not thought about how non-standard TCPs, with
+        // non-standard values of decrease_num_, should respond
+        // after queiscent periods.
+        cwnd_ = decrasewin;
+        if (cwnd_ < 1)
+            cwnd_ = 1;
+    } else if (how & CLOSE_CWND_RESTART)
+        cwnd_ = int(wnd_restart_);
+    else if (how & CLOSE_CWND_INIT)
+        cwnd_ = int(wnd_init_);
+    else if (how & CLOSE_CWND_ONE)
+        cwnd_ = 1
+    else if (how & CLOSE_CWND_HALF_WAY) { 
+        cwnd_ = W_used + decrease_num_ * (win - W_used);
+        if (cwnd_ < 1)
+            cwnd_ = 1;
+    }
+    if (ssthresh_ < 2)
+        ssthresh_ = 2;
+    if (cwnd_ < 1)
+        cwnd_ = 1; //Added by Mohammad
+    if (how & (CLOSE_CWND_HALF | CLOSE_CWND_RESTART | CLOSE_CWND_INIT | CLOSE_CWND_ONE | CLOSE_CWND_ECNHAT))
+        cong_action_ = TRUE;
+
+    fcnt_ = count_ = 0;
+    if (first_decrase_ == 1)
+        first_decrease_ = 0;
+    // for event tracing slow start
+    if (cwnd_ == 1 || slowstart)
+        // Not sure if this is best way to capture slow_start
+        // This is probably tracing a superset of slowdowns of
+        // which all may not be slow_starts -- Padmma, 07/'01
+        trace_event("SLOW_START");
+}
+
+int
+DDTcpAgent::byterm() {
+    return curseq_ - int(highest_ack_) - sq_.total();
+}
+
+int
+DDTcpAgent::foutput(int seqno, int reason) {
+    if (deadline != 0) {
+        double tleft = deadline/1e6 - (now() - start_time) - (curseq_ - int(maxseq_)) * 8/1e10;
+        if (tleft < 0 && signal_on_empty_) {
+            early_terminated_ = 1;
+            bufferempty();
+            printf("early termination V2 now %.8lf start %.8lf deadline %d byterm %d tleft %.8f\n", now(), start_time, deadline, curseq_ - int(maxseq_), tleft);
+            fflush(stdout);
+            return 0;
+        } else if (tleft < 0) {
+            return 0;
+        }
+    }
+    return SackFullTcpAgent::foutput(seqno, reason);
+}
+
+int
+DDTcpAgent::need_send() {
+    if (deadline != 0) {
+        double tleft1 = deadline/1e6 - (now() - start_time);
+        if (tleft1 < 0)
+            return 0;
+    }
+    return SackFullTcpAgent::need_send();
 }
