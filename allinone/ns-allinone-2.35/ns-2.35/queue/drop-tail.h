@@ -76,7 +76,7 @@ class DropTail : public Queue {
 		bind_bool("drop_front_", &drop_front_);
         bind_bool("drop_smart_", &drop_smart_);
         bind_bool("drop_prio_", &drop_prio_);
-        bind_bool("deque_prio", &deque_prio_);
+        bind_bool("deque_prio_", &deque_prio_);
         bind_bool("keep_order_", &keep_order_);
 		bind_bool("summarystats_", &summarystats);
 		bind_bool("queue_in_bytes_", &qib_);  // boolean: q in bytes?
