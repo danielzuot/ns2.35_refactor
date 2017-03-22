@@ -128,22 +128,22 @@ Queue/dsRED set ecn_ 0
 Queue/XCP set tcp_xcp_on_ 0  ;
 
 # Drop Tail Variant
-Queue/DropTailVariant set drop_front_ false
-Queue/DropTailVariant set summarystats_ false
-Queue/DropTailVariant set queue_in_bytes_ false
-Queue/DropTailVariant set mean_pktsize_ 500
-Queue/DropTailVariant set tcp_queue_limit_pkts_ 1000
+#Queue/DropTailVariant set drop_front_ false
+#Queue/DropTailVariant set summarystats_ false
+#Queue/DropTailVariant set queue_in_bytes_ false
+#Queue/DropTailVariant set mean_pktsize_ 500
+#Queue/DropTailVariant set tcp_queue_limit_pkts_ 1000
 
-Queue/DropTailVariant/RCP set alpha_ 0.4
-Queue/DropTailVariant/RCP set beta_ 0.4
-Queue/DropTailVariant/RCP set gamma_ 1
-Queue/DropTailVariant/RCP set min_pprtt_ 0.01
-Queue/DropTailVariant/RCP set init_rate_fact_ 0.05
-Queue/DropTailVariant/RCP set print_status 1
-Queue/DropTailVariant/RCP set rate_fact_mode_ 0
-Queue/DropTailVariant/RCP set fixed_rate_fact_ 0.05 ;# effective only if rate_fact_mode = 1
-Queue/DropTailVariant/RCP set propag_rtt_ 1.0   ;# effective only if rate_fact_mode = 3
-Queue/DropTailVariant/RCP set upd_timeslot_ 0.01    ;# rate update interval (sec).
+#Queue/DropTailVariant/RCP set alpha_ 0.4
+#Queue/DropTailVariant/RCP set beta_ 0.4
+#Queue/DropTailVariant/RCP set gamma_ 1
+#Queue/DropTailVariant/RCP set min_pprtt_ 0.01
+#Queue/DropTailVariant/RCP set init_rate_fact_ 0.05
+#Queue/DropTailVariant/RCP set print_status 1
+#Queue/DropTailVariant/RCP set rate_fact_mode_ 0
+#Queue/DropTailVariant/RCP set fixed_rate_fact_ 0.05 ;# effective only if rate_fact_mode = 1
+#Queue/DropTailVariant/RCP set propag_rtt_ 1.0   ;# effective only if rate_fact_mode = 3
+#Queue/DropTailVariant/RCP set upd_timeslot_ 0.01    ;# rate update interval (sec).
 
 
 Queue/RED set bytes_ true ;		# default changed on 10/11/2004.
@@ -340,7 +340,7 @@ QueueMonitor set bdrops_ 0
 
 #added for count dropping from small flow - Shuang
 QueueMonitor set num_monitor_ 50
-for {set k 0}{$k < 50}{incr k} {
+for {set k 0} {$k < 50} {incr k} {
     set tmp kdrops$k
     QueueMonitor set $tmp 0
     set tmp karrivals$k
@@ -1118,7 +1118,7 @@ Agent/TCP set ecnhat_quadratic_beta_ false
 Agent/TCP set ecnhat_tcp_friendly_ false
 Agent/TCP set perPacketMP_ false
 Agent/TCP set pathAwareMP_ false
-Agent/TCP set num_paths_1
+Agent/TCP set num_paths_ 1
 
 
 # DCTCP
@@ -1345,7 +1345,7 @@ if [TclObject is-class Agent/TCP/FullTcp] {
     Agent/TCP/FullTcp set prio_cap4 266*1460+15
     Agent/TCP/FullTcp set prio_cap5 1001*1460+15
     Agent/TCP/FullTcp set prio_cap6 2825*1460+15
-    Agent/TCP/FullTcp set prob_cap_0; #Shuang: prob mode
+    Agent/TCP/FullTcp set prob_cap_ 0; #Shuang: prob mode
     Agent/TCP/FullTcp set deadline 0; #Shuang: deadline
     Agent/TCP/FullTcp set early_terminated_ 0; #Shuang
 
