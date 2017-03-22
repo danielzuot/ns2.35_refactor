@@ -355,13 +355,13 @@ Node instproc add-routes {id ifs} {
 			$mpathClsfr_($id) set nodeid_ [$self id]
             set nodecolor_ [$self get-attribute "COLOR"]
             set nodetype_ 0
-            if {$nodecolor_ == "green") {
+            if {$nodecolor_ == "green"} {
                 set nodetype_ 1
             }
-            if {$nodecolor_ == "blue") {
+            if {$nodecolor_ == "blue"} {
                 set nodetype_ 2
             }
-            if {$nodecolor_ == "red") {
+            if {$nodecolor_ == "red"} {
                 set nodetype_ 3
             }
             $mpathClsfr_($id) set nodetype_ $nodetype_

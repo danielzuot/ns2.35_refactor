@@ -48,12 +48,12 @@ namespace std
 using namespace __gnu_cxx;
 }
 */
-#include <tr1/unordered_map>
-#include <tr1/functional>
+#include <unordered_map>
+#include <functional>
 #include <queue>
 
 using std::queue;
-using std::tr1::unordered_map;
+using std::unordered_map;
 //using std::tr1::functional;
 
 #include <string>
@@ -61,9 +61,9 @@ using std::tr1::unordered_map;
 #include "config.h"
 
 typedef struct flowkey {
-    nsaddr_tr src, dst;
+    nsaddr_t src, dst;
     int fid;
-} FlowKey
+} FlowKey;
 
 /*
  * A bounded, drop-tail queue

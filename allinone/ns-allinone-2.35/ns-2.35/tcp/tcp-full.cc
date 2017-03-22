@@ -103,18 +103,19 @@ public:
 } class_sack_full;
 
 static class MinTcpClass : public TclClass {
-    public:
-        MinTcpClass() : TclClass("Agent/TCP/FullTcp/Sack/MinTCP") {}
-        TclObject* create(int, const char*const*) {
-            return (new MinTcpAgent());
-        }
+public:
+    MinTcpClass() : TclClass("Agent/TCP/FullTcp/Sack/MinTCP") {}
+    TclObject* create(int, const char*const*) {
+        return (new MinTcpAgent());
+    }
 } class_min_full;
 
 static class DDTcpClass : public TclClass {
-    public:
-        DDTcpClass() : TclClass("Agent/TCP/FullTcp/Sack/DDTCP") {}
-        TclObject* create(int, const char*const*) {
-            return (new DDTcpAgent());
+public:
+    DDTcpClass() : TclClass("Agent/TCP/FullTcp/Sack/DDTCP") {}
+    TclObject* create(int, const char*const*) {
+        return (new DDTcpAgent());
+    }
 } class_dd_full;
 
 /*
@@ -193,20 +194,20 @@ FullTcpAgent::delay_bind_dispatch(const char *varName, const char *localName, Tc
         if (delay_bind(varName, localName, "ecn_syn_wait_", &ecn_syn_wait_, tracer)) return TCL_OK;
         if (delay_bind_bool(varName, localName, "debug_", &debug_, tracer)) return TCL_OK;
 
-        if (delay_bind_bool(varName, localName, "flow_remaining_", &flow_remaining_, tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "dynamic_dupack_", &dynamic_dupack_, tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "prio_scheme_", &prio_scheme_, tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "prio_num_", &prio_num_, tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "prio_cap0", &prio_cap_[0], tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "prio_cap1", &prio_cap_[1], tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "prio_cap2", &prio_cap_[2], tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "prio_cap3", &prio_cap_[3], tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "prio_cap4", &prio_cap_[4], tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "prio_cap5", &prio_cap_[5], tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "prio_cap6", &prio_cap_[6], tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "prio_cap_", &prio_cap_, tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "deadline", &deadline, tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "early_terminated_", &early_terminated_, tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "flow_remaining_", &flow_remaining_, tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "dynamic_dupack_", &dynamic_dupack_, tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "prio_scheme_", &prio_scheme_, tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "prio_num_", &prio_num_, tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "prio_cap0", &prio_cap_[0], tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "prio_cap1", &prio_cap_[1], tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "prio_cap2", &prio_cap_[2], tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "prio_cap3", &prio_cap_[3], tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "prio_cap4", &prio_cap_[4], tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "prio_cap5", &prio_cap_[5], tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "prio_cap6", &prio_cap_[6], tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "prob_cap_", &prob_cap_, tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "deadline", &deadline, tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "early_terminated_", &early_terminated_, tracer)) return TCL_OK;
         return TcpAgent::delay_bind_dispatch(varName, localName, tracer);
 }
 
@@ -276,7 +277,7 @@ FullTcpAgent::command(int argc, const char*const* argv)
 		}
         //Mohammad
         if (strcmp(argv[1], "get-flow") == 0) {
-            flow_remaining_ = atoi(argv[2])
+            flow_remaining_ = atoi(argv[2]);
 	        return (TCL_OK);
         }
     }
@@ -820,21 +821,21 @@ int
 FullTcpAgent::set_prio(int seq, int maxseq) {
     int max = 100 * 1460;
     int prio;
-    if (prio_scheme_ = 0) {
+    if (prio_scheme_ == 0) {
         if ( seq - startseq_ > max)
             prio = max;
         else
             prio = seq - startseq_;
     }
-    if (prio_scheme_ = 1) 
+    if (prio_scheme_ == 1) 
         prio = maxseq - startseq_;
-    if (prio_scheme_ = 2)
+    if (prio_scheme_ == 2)
         prio = maxseq - seq;
-    if (prio_scheme_ = 3)
+    if (prio_scheme_ == 3)
         prio = seq - startseq_;
 
     if (prio_num_ == 0)
-        return prio
+        return prio;
     else
         return calPrio(prio);
 }
@@ -2658,7 +2659,7 @@ step6:
 				// been a hole fill.  In this case, there
 				// is something to give to application
 				recvBytes(rcv_nxt_ - rcv_nxt_old_);
-                if (flow_remaining_ > 0) {
+                if (flow_remaining_ > 0)
                     flow_remaining_ -= datalen; //Mohammad
                 if (flow_remaining_ == 0) {
                     flags_ |= TF_ACKNOW;
@@ -3143,7 +3144,7 @@ SackFullTcpAgent::set_prio(int seq, int maxseq) {
             if (maxseq - int(highest_ack_) - sq_.total() + 10 < 0)
                 last_prio_ = 0;
             else
-                last_prio_ = maxseq - int(highest_ack) 0 sq_.total() + 10;
+                last_prio_ = maxseq - int(highest_ack_) - sq_.total() + 10;
         }
         prio = last_prio_;
     }
@@ -3152,6 +3153,7 @@ SackFullTcpAgent::set_prio(int seq, int maxseq) {
         return prio;
     else
         return calPrio(prio);
+}
 
 void
 SackFullTcpAgent::reset()
@@ -3452,7 +3454,7 @@ SackFullTcpAgent::nxt_tseq()
 }
 
 int SackFullTcpAgent::byterm() {
-    return curseq_ - int(highest_ack_) - sq_.total() - window() * mexseg_;
+    return curseq_ - int(highest_ack_) - sq_.total() - window() * maxseg_;
 }
 
 void MinTcpAgent::timeout_action() {
@@ -3471,7 +3473,7 @@ void MinTcpAgent::timeout_action() {
 
 double
 MinTcpAgent::rtt_timeout() {
-    return mintro_;
+    return minrto_;
 }
 
 void DDTcpAgent::slowdown(int how) {
@@ -3550,6 +3552,7 @@ void DDTcpAgent::slowdown(int how) {
         } else {
             ssthresh_ = (int) decreasewin;
         }
+    }
     else if (how & CLOSE_SSTHRESH_ECNHAT)
         ssthresh_ = (int) ((1 - penalty/2.0) * windowd());
     else if (how & THREE_QUARTER_SSTHRESH) {
@@ -3571,7 +3574,7 @@ void DDTcpAgent::slowdown(int how) {
         // We have not thought about how non-standard TCPs, with
         // non-standard values of decrease_num_, should respond
         // after queiscent periods.
-        cwnd_ = decrasewin;
+        cwnd_ = decreasewin;
         if (cwnd_ < 1)
             cwnd_ = 1;
     } else if (how & CLOSE_CWND_RESTART)
@@ -3579,7 +3582,7 @@ void DDTcpAgent::slowdown(int how) {
     else if (how & CLOSE_CWND_INIT)
         cwnd_ = int(wnd_init_);
     else if (how & CLOSE_CWND_ONE)
-        cwnd_ = 1
+        cwnd_ = 1;
     else if (how & CLOSE_CWND_HALF_WAY) { 
         cwnd_ = W_used + decrease_num_ * (win - W_used);
         if (cwnd_ < 1)
@@ -3593,7 +3596,7 @@ void DDTcpAgent::slowdown(int how) {
         cong_action_ = TRUE;
 
     fcnt_ = count_ = 0;
-    if (first_decrase_ == 1)
+    if (first_decrease_ == 1)
         first_decrease_ = 0;
     // for event tracing slow start
     if (cwnd_ == 1 || slowstart)

@@ -346,6 +346,6 @@ class DDTcpAgent : public SackFullTcpAgent {
     virtual int byterm();
     virtual int foutput(int seqno, int reason = 0); // output 1 packet
     virtual int need_send();        // send ACK/win-update now?
-}
+};
 
 #endif

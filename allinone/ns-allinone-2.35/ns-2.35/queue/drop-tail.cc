@@ -90,7 +90,6 @@ void DropTail::enque(Packet* p)
 	}
 
     //printf("qlim_ = %d, qib_ = %d, mean_pktsize_ = %d\n", qlim_, qib_, mean_pktsize_);
-            i
 
 	int qlimBytes = qlim_ * mean_pktsize_;
 	if ((!qib_ && (q_->length() + 1) >= qlim_) ||
@@ -102,10 +101,10 @@ void DropTail::enque(Packet* p)
 			drop(pp);
 		} 
         else if (drop_prio_) {
-            Packet *max_pp = p
+            Packet *max_pp = p;
             int max_prio = 0;
 
-            q_enqueue(p);
+            q_->enque(p);
             q_->resetIterator();
             for (Packet *pp = q_->getNext(); pp != 0; pp = q_->getNext()) {
                 if (!qib_ || ( q_->byteLength() - hdr_cmn::access(pp)->size() < qlimBytes)) {
@@ -124,7 +123,7 @@ void DropTail::enque(Packet* p)
             Packet *max_pp = p;
             int max_count = 0;
 
-            q_->enqueue(p);
+            q_->enque(p);
             q_->resetIterator();
             for (Packet *pp = q_->getNext(); pp != 0; pp = q_->getNext()) {
                 hdr_ip* h = hdr_ip::access(pp);
@@ -137,7 +136,7 @@ void DropTail::enque(Packet* p)
                 int length = sizeof(fkey);
                 string fkey_string(fkey_buf, length);
 
-                std::tr1::hash<string> string_hasher;
+                std::hash<string> string_hasher;
                 size_t signature = string_hasher(fkey_string);
 
                 if (sq_counts_.find(signature) != sq_counts_.end()) {
@@ -151,7 +150,7 @@ void DropTail::enque(Packet* p)
             q_->remove(max_pp);
             /* bunch of stuff about FlowKey and dropping something else instead*/
             drop(max_pp);
-        else {
+        } else {
 			drop(p);
 		}
 	} else {
@@ -197,7 +196,7 @@ Packet* DropTail::deque()
             return 0;
         }
         for (Packet *pp = q_->getNext(); pp != 0; pp = q_->getNext()) {
-            hdr_ip* h = hdr_ip:access(pp);
+            hdr_ip* h = hdr_ip::access(pp);
             int prio = h->prio();
             //deque from the head
             if (prio < highest_prio_) {
@@ -207,7 +206,7 @@ Packet* DropTail::deque()
         }
         if (keep_order_) {
             q_->resetIterator();
-            hdr_ip* hp = hdr_ip::access(pp);
+            hdr_ip* hp = hdr_ip::access(p);
             for (Packet *pp = q_->getNext(); pp != p; pp = q_->getNext()) {
                 hdr_ip* h = hdr_ip::access(pp);
                 if (h->saddr() == hp->saddr()
@@ -222,7 +221,7 @@ Packet* DropTail::deque()
         /* if p->flowid() == 1, do some stuff*/
 
         q_->remove(p);
-        return p
+        return p;
     } else {
         if (drop_smart_) {
             Packet *p = q_->deque();
@@ -237,7 +236,7 @@ Packet* DropTail::deque()
                 int length = sizeof(fkey);
                 string fkey_string(fkey_buf, length);
 
-                std::tr1::hash<string> string_hasher;
+                std::hash<string> string_hasher;
                 size_t signature = string_hasher(fkey_string);
                 sq_queue_.push(signature);
 

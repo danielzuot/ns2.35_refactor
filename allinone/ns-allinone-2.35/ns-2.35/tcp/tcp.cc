@@ -234,9 +234,10 @@ TcpAgent::delay_bind_dispatch(const char *varName, const char *localName, TclObj
         // Mohammad
         if (delay_bind_bool(varName, localName, "ecnhat_", &ecnhat_, tracer)) return TCL_OK;
         if (delay_bind_bool(varName, localName, "ecnhat_smooth_alpha_", &ecnhat_smooth_alpha_, tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "ecnhat_alpha_", &ecnhat_alpha_, tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "ecnhat_g_", &ecnhat_g_, tracer)) return TCL_OK;
-        if (delay_bind_bool(varName, localName, "ecnhat_beta_", &ecnhat_beta_, tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "ecnhat_alpha_", &ecnhat_alpha_, tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "ecnhat_g_", &ecnhat_g_, tracer)) return TCL_OK;
+        if (delay_bind_bool(varName, localName, "ecnhat_enable_beta_", &ecnhat_enable_beta_, tracer)) return TCL_OK;
+        if (delay_bind(varName, localName, "ecnhat_beta_", &ecnhat_beta_, tracer)) return TCL_OK;
         if (delay_bind_bool(varName, localName, "ecnhat_quadratic_beta_", &ecnhat_quadratic_beta_, tracer)) return TCL_OK;
         if (delay_bind_bool(varName, localName, "ecnhat_tcp_friendly_", &ecnhat_tcp_friendly_, tracer)) return TCL_OK;
         
@@ -1133,7 +1134,7 @@ void TcpAgent::opencwnd()
 	double increment;
 	if (cwnd_ < ssthresh_) {
 		/* slow-start (exponential) */
-        if (ecnhat_enable_beta)
+        if (ecnhat_enable_beta_)
             cwnd_ += ecnhat_beta_ / cwnd_;
         else {
             //cwnd_ += increase_num_ / cwnd_;
@@ -1468,7 +1469,8 @@ void TcpAgent::ecn(int seqno)
                 target_wnd = cwnd_;
                 ecnhat_tcp_friendly_increase_ = 1.5/(2.0/ecnhat_alpha_ - 0.5);
             }
-            slowdown(CLOSE_CWND_ECNHAT_|CLOSE_SSTHRESH_ECNHAT);
+            slowdown(CLOSE_CWND_ECNHAT|CLOSE_SSTHRESH_ECNHAT);
+        }
 		if (dctcp_)  
 			slowdown(CLOSE_CWND_DCTCP|CLOSE_SSTHRESH_DCTCP);
 		else
@@ -1493,7 +1495,7 @@ void TcpAgent::update_ecnhat_alpha(Packet *pkt)
         int acked_bytes = ackno - highest_ack_;
         if (acked_bytes <= 0)
             acked_bytes = size_;
-        ecnhat_total_ += acked_bytes;
+        ecnhat_total += acked_bytes;
         if (ecnbit) {
             ecnhat_num_marked += acked_bytes;
             ecnhat_beta_ = 1;
