@@ -105,7 +105,7 @@ Queue/DropTail set queue_in_bytes_ false
 Queue/DropTail set mean_pktsize_ 500
 # Mohammad: Smart drop
 Queue/DropTail set drop_smart_ false
-Queue/Droptail set sq_limit_ 10
+Queue/DropTail set sq_limit_ 10
 
 Queue/DropTail/PriQueue set Prefer_Routing_Protocols    1
 
