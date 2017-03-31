@@ -1,9 +1,0 @@
-ns: 
-[code omitted because of length]
-: missing close-brace
-    while executing
-"Node instproc add-routes {id ifs} {
-$self instvar classifier_ multiPath_ routes_ mpathClsfr_
-if !$multiPath_ {
-if {[llength $ifs] > 1} {
-warn "$class:..."
