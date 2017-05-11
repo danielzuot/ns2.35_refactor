@@ -6,7 +6,7 @@ source "tcp-common-opt.tcl"
 #add-packet-header Flags IP RCP  ;#hdrs reqd for RCP traffic
 
 set ns [new Simulator]
-puts "Date: [clock format [clock seconds]]"
+#puts "Date: [clock format [clock seconds]]"
 set sim_start [clock seconds]
 puts "Host: [exec uname -a]"
 

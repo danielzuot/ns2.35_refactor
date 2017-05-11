@@ -35,13 +35,13 @@ $switchAlg = "RED";
 
 $enableNAM = 0;
 
-$numcores = 8;
+$numcores = 1;
 
 $trial = 1;
 
 ## Change this according to your environment
-$user = "alizadeh";
-$top_dir = "/home/alizadeh/pfabric_reproduce_test";
+$user = "danielzuo";
+$top_dir = "~/MIT/urop/alizadeh/ns2.35_refactor/allinone";
 ###########################################
 $tcl_script = "empirical_search_dctcp";
 $work_dir = "$top_dir/work_dir";
@@ -69,9 +69,9 @@ print "compressing ns...\n";
 print "backing up ns at parent folder...\n";
 `scp $user\@$ns_source_server:$ns_source_path/ns-latest.tar.gz ..`;
     
-$ns_path ="$top_dir/ns-allinone-2.34/bin:$top_dir/ns-allinone-2.34/tcl8.4.18/unix:$top_dir/ns-allinone-2.34/tk8.4.18/unix:\$PATH";
-$ld_lib_path = "$top_dir/ns-allinone-2.34/otcl-1.13:$top_dir/ns-allinone-2.34/lib";
-$tcl_lib = "$top_dir/ns-allinone-2.34/tcl8.4.18/library";
+$ns_path ="$top_dir/ns-allinone-2.35/bin:$top_dir/ns-allinone-2.35/tcl8.5.10/unix:$top_dir/ns-allinone-2.35/tk8.5.10/unix:\$PATH";
+$ld_lib_path = "$top_dir/ns-allinone-2.35/otcl-1.14:$top_dir/ns-allinone-2.35/lib";
+$tcl_lib = "$top_dir/ns-allinone-2.35/tcl8.5.10/library";
 $set_path_cmd = "export PATH=$ns_path && export LD_LIBRARY_PATH=$ld_lib_path && export TCL_LIBRARY=$tcl_lib";
 
 foreach (@server_list) {
