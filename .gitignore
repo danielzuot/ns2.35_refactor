@@ -2,3 +2,11 @@
 out.nam
 *.tar.gz
 logs/*
+*.swp
+*.d*
+*.txt
+*.pb.cc
+*.tr
+*.tar.gz
+*.P
+*.pb.h
