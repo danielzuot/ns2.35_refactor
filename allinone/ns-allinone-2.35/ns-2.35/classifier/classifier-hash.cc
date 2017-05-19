@@ -100,31 +100,15 @@ void DestHashClassifier::deque_callback(Packet* p) {
 			const int32_t input_port = hdr_cmn::access(p)->input_port();
 			assert(input_counters_.at(input_port) > 0);
 			input_counters_.at(input_port)--;
-			if (input_port == 0) {
-				q_makeup_zero_--;
-			} else if (input_port == 2) {
-				q_makeup_one_--;
-			} else if (input_port == 4) {
-				q_makeup_two_--;
-			}
 			/* Resume logic */
 			if (input_counters_.at(input_port) < resume_threshold_ and
 				is_paused(input_port)) {
 				if (input_port != -1) {
-					if (input_port == 4) {
-					printf("%f: Sending resume packet to %d, since input_counters = %d and is_paused=%d\n",
-						Scheduler::instance().clock(),
-						input_port,
-						input_counters_[input_port],
-						is_paused(input_port));
-					}
 					auto unpause_pkt = generate_pause_pkt(input_port, PauseAction::RESUME);
 					/* no point sending a pause to an agent */
 					int slot = lookup(unpause_pkt);
 					slot_[slot]->recv(unpause_pkt);
 					paused_.at(input_port) = false;
-					/* cancel the pause renewal check */
-					cancelEvent(&(pause_renewals_[input_port].e_));
 				}
 			}
 
@@ -180,17 +164,8 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 	if (hdr_cmn::access(p)->ptype() == PT_PAUSE) {
 		if (hdr_pause::access(p)->class_pause_durations_[0] == 0) {
 			/* if you are receiving a resume */
-			if (node_id_ == 4) {
-				printf("%f: Received resume packet\n",
-						Scheduler::instance().clock());
-			}
 			const auto src_addr = hdr_ip::access(p)->saddr();
 			assert(src_addr != node_id_);
-
-			/* cancel pause expiration timer */
-			auto link_to_pause = find_node_type<LinkDelay>(find_dst(src_addr));
-			auto resume_event = &(link_to_pause->intr());
-			cancelEvent(resume_event);
 
 			/* unblock queue */
 			auto queue_to_unblock = find_node_type<Queue>(find_dst(src_addr));
@@ -214,17 +189,8 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 
 			/* find the LinkDelay class */
 			/* Cancel timer that fires after existing packet delivery event */
-			Scheduler& s = Scheduler::instance();
 			auto link_to_pause = find_node_type<LinkDelay>(find_dst(src_addr));
-			auto resume_event = &(link_to_pause->intr());
-			double original_time = resume_event->time_;
-			cancelEvent(resume_event);
-
-			/* Reset unblock timer to fire after pause_delay has expired */
-			resume_event->time_ = s.clock() + hdr_pause::access(p)->class_pause_durations_[0];
-			/* if negative, then it's already happened, otherwise don't touch */
-			resume_event->uid_ = abs(resume_event->uid_);
-			s.insert(resume_event);
+			Scheduler::instance().cancel(&link_to_pause->intr());
 
 			/* set queue to blocked */
 			auto queue_to_block = find_node_type<Queue>(find_dst(src_addr));
@@ -244,17 +210,6 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 		/* Input accounting for pause */
 		const int32_t input_port = hdr_cmn::access(p)->input_port();
 		input_counters_[input_port]++;
-		if (pause_renewals_.count(input_port) == 0 && input_port != -1) {
-			/* new input port, need to create and add handler */
-			pause_renewals_[input_port] = DestHashHandler(this, input_port);
-		}
-		if (input_port == 0) {
-				q_makeup_zero_++;
-			} else if (input_port == 2) {
-				q_makeup_one_++;
-			} else if (input_port == 4) {
-				q_makeup_two_++;
-			}
 		if (input_counters_[input_port] > pause_threshold_ and
 			(not is_paused(input_port))) {
 			if (input_port != -1) {
@@ -264,16 +219,6 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 				slot_[slot]->recv(pause_pkt);
 				paused_[input_port] = true;
 				pause_count_++;
-				if (input_port == 4) {
-					printf("%f: Sending pause packet to %d, since input_counters = %d and is_paused=%d\n",
-						Scheduler::instance().clock(),
-						input_port,
-						input_counters_[input_port],
-						is_paused(input_port));
-				}
-				/* schedule the pause renewal check */
-				Scheduler& s = Scheduler::instance();
-				s.schedule(&pause_renewals_[input_port], &pause_renewals_[input_port].e_, hdr_pause::access(pause_pkt)->class_pause_durations_[0]);
 			}
 		}
 	}
