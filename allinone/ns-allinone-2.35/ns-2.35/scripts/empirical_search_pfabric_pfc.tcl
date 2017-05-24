@@ -243,13 +243,14 @@ for {set i 0} {$i < $S} {incr i} {
 
 for {set i 0} {$i < $topology_tors} {incr i} {
     for {set j 0} {$j < $topology_spines} {incr j} {
-	$ns duplex-link $n($i) $a($j) [set UCap]Gb $mean_link_delay $switchAlg	
-	$ns duplex-link-op $n($i) $a($j) queuePos 0.25
+	    $ns duplex-link $n($i) $a($j) [set UCap]Gb $mean_link_delay $switchAlg	
+	    $ns duplex-link-op $n($i) $a($j) queuePos 0.25
     	set qfile(n$i,a$j) [$ns monitor-queue $n($i) $a($j) [open queue_n$i\_a$j.tr w] $queueSamplingInterval]
     	set qfile(a$j,n$i) [$ns monitor-queue $a($j) $n($i) [open queue_a$j\_n$i.tr w] $queueSamplingInterval]
-    }
-    if {$enable_pause == 1} {
-        attach-classifiers $ns $n($i) $a($j)
+    
+        if {$enable_pause == 1} {
+            attach-classifiers $ns $n($i) $a($j)
+        }
     }
 }
 

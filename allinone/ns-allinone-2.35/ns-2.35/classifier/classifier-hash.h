@@ -173,44 +173,25 @@ protected:
 	}
 };
 
-class DestHashClassifier;
-
-class DestHashHandler : public Handler {
-public:
-	DestHashHandler() {}
-	DestHashHandler(DestHashClassifier* dhc, int32_t input_port) : dhc_(dhc), input_port_(input_port) {}
-	void handle(Event*);
-	Event e_;
-private:
-	DestHashClassifier* dhc_;
-	int32_t input_port_;
-};
 
 class DestHashClassifier : public HashClassifier {
-	friend class DestHashHandler;
 public:
 	DestHashClassifier() : HashClassifier(TCL_ONE_WORD_KEYS), 
-		enable_pause_(0), qcap_(0), pause_duration_(0), pause_threshold_(0), resume_threshold_(0), 
-		pause_count_(0), q_makeup_zero_(0), q_makeup_one_(0), q_makeup_two_(0)
+		enable_pause_(0), pause_threshold_(0), resume_threshold_(0), 
+		pause_count_(0)
 		{ bind ("enable_pause_", &enable_pause_);
 		  bind ("pause_threshold_", &pause_threshold_);
 		  bind ("resume_threshold_", &resume_threshold_);
-		  bind ("pause_duration_", &pause_duration_);
-		  bind ("pause_count_", &pause_count_);
-		  bind ("q_makeup_zero_", &q_makeup_zero_);
-		  bind ("q_makeup_one_", &q_makeup_one_);
-		  bind ("q_makeup_two_", &q_makeup_two_); }
+		  bind ("pause_count_", &pause_count_); }
 	virtual int command(int argc, const char*const* argv);
 	int classify(Packet *p);
 	virtual void do_install(char *dst, NsObject *target);
 	void recv(Packet* p, Handler* h) override;
 	void deque_callback(Packet* p);
-	void attach_queue_callback(int qlim);
 	enum class PauseAction { PAUSE, RESUME };
 
 protected:
 	std::map<int32_t, uint64_t> input_counters_;
-	std::map<int32_t, DestHashHandler> pause_renewals_;
 	std::map<int32_t, bool> paused_;
 	uint64_t qcap_;
 	const char* hashkey(nsaddr_t, nsaddr_t dst, int) {
@@ -233,14 +214,9 @@ protected:
 private:
 	int pause_threshold_;
 	int resume_threshold_;
-	double pause_duration_;
 	int enable_pause_;
 	int pause_count_;
-	int q_makeup_zero_;
-	int q_makeup_one_;
-	int q_makeup_two_;
 	Packet* generate_pause_pkt(const int32_t port_to_pause, const PauseAction action);
 	NsObject* find_dst(const int32_t dst);
 	bool is_paused(const int32_t port);
-	void cancelEvent(Event* e);
 };

@@ -6,7 +6,7 @@ set ns [new Simulator]
 
 # PARAMETERS
 set enable_pause 1
-set enableNAM 0
+set enableNAM 1
 set queueFile [open traces/queue.tr w]
 set srcQueueFile [open traces/srcqueue.tr w]
 set myTraceFile [open traces/mytrace.tr w]

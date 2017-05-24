@@ -1399,6 +1399,8 @@ void
 FullTcpAgent::newack(Packet* pkt)
 {
     //Shuang: cancel prob_mode_ when receiving an ack
+    printf("%f: \t cancelling probe mode because received ack\n",
+            Scheduler::instance().clock());
     prob_mode_ = false;
     prob_count_ = 0;
 	hdr_tcp *tcph = hdr_tcp::access(pkt);
@@ -1618,6 +1620,8 @@ void
 FullTcpAgent::recv(Packet *pkt, Handler*)
 {
     //Shuang: cancel probe mode
+    printf("%f: \t cancelling probe mode because recv invoked\n",
+            Scheduler::instance().clock());
     prob_mode_ = false;
     prob_count_ = 0;
 
@@ -3462,6 +3466,10 @@ void MinTcpAgent::timeout_action() {
     if (prob_cap_ != 0) {
         prob_count_++;
         if (prob_count_ == prob_cap_) {
+            printf("%f: \t switching to probe mode\n\tprob_count_=%d\n\tprob_cap_=%d\n",
+                Scheduler::instance().clock(),
+                prob_count_,
+                prob_cap_);
             prob_mode_ = true;
         }
         //Shuang: h_seqno_?

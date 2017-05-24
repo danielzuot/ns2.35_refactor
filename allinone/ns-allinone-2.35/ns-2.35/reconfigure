@@ -1,8 +1,8 @@
 #!/bin/bash
 
 clear
+#TCLVER=8.5.10
+#TKVER=8.5.10
 ./configure --x-libraries=/usr/X11R6/lib --x-includes=/usr/X11R6/include --with-tcl-ver=$TCLVER --with-tk-ver=$TKVER --disable-shlib CFLAGS="-framework CoreFoundation"
 make
 echo "Reconfigured!"
-echo "$TCLVER"
-echo "$TKVER"

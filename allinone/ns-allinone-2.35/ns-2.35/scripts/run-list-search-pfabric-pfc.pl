@@ -246,7 +246,7 @@ while (wait() != -1) {
 $mon++;
 
 
-`ssh $user\@$log_server 'mv $log_dir/logs $log_dir/$mon$mday-search-pfabric'`;
+`ssh $user\@$log_server 'mv $log_dir/logs $log_dir/$mon$mday-search-pfabric-pfc'`;
 
 ######################################################
 # Cleanup servers
