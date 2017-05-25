@@ -38,6 +38,7 @@
 #define ns_classifier_h
 
 #include "object.h"
+#include <map>
 
 class Packet;
 
@@ -88,6 +89,8 @@ protected:
 	int32_t node_id_;
 	NsObject *default_target_;
 	int nsize_;       //what size of nslot_ should be
+	std::map<int32_t, uint64_t> pause_thresholds_; // dzuo: for pfc thresholds
+	std::map<int32_t, uint64_t> resume_thresholds_;
 };
 
 #endif

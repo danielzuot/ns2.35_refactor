@@ -27,6 +27,7 @@ $switchAlg = "RED";
 @prio_scheme_ = (2);
 @prob_mode_ = (0);
 @keep_order_ = ("false");
+@pfc_enabled_ = 0;
 
 @topology_spt = (8); #server per tor
 @topology_tors = (5);
@@ -127,7 +128,7 @@ foreach (@load) {
 					    foreach($ko = 0; $ko < @keep_order_; $ko++) {
 						$cur_ko = $keep_order_[$ko];
 
-						$arguments = "$sim_end $cap $link_delay $host_delay $cur_queueSize $cur_load $connections_per_pair $meanFlowSize $enableMultiPath $cur_perflowMP $cur_sourceAlg $cur_ackratio $cur_slowstartrestart $DCTCP_g $cur_rto $switchAlg $cur_DCTCP_K $cur_drop_prio $cur_prio_scheme $cur_deque_scheme $cur_prob_cap $cur_ko $cur_topology_spt $cur_topology_tors $cur_topology_spines $cur_topology_x $enableNAM";
+						$arguments = "$sim_end $cap $link_delay $host_delay $cur_queueSize $cur_load $connections_per_pair $meanFlowSize $enableMultiPath $cur_perflowMP $cur_sourceAlg $cur_ackratio $cur_slowstartrestart $DCTCP_g $cur_rto $switchAlg $cur_DCTCP_K $cur_drop_prio $cur_prio_scheme $cur_deque_scheme $cur_prob_cap $cur_ko $pfc_enabled_ $cur_topology_spt $cur_topology_tors $cur_topology_spines $cur_topology_x $enableNAM";
 				
 						if ($trial < 10) {
 						    $strial = "00$trial";

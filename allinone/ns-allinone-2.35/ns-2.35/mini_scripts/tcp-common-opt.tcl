@@ -6,18 +6,16 @@
 #
 set next_fid 0
 
-proc attach-classifiers {ns n1 n2 pauseThreshold resumeThreshold} {
+proc attach-classifiers {ns n1 n2 qlim buffer_threshold} {
     set fwd_queue [[$ns link $n1 $n2] queue]
     $fwd_queue attach-classifier [$n1 entry]
     [$n1 entry] set enable_pause_ 1
-    [$n1 entry] set pause_threshold_ $pauseThreshold
-    [$n1 entry] set resume_threshold_ $resumeThreshold
+    [$n2 entry] set-buffer-threshold [[$n1 entry] set node_id_] $qlim $buffer_threshold
 
     set bwd_queue [[$ns link $n2 $n1] queue]
     $bwd_queue attach-classifier [$n2 entry]
     [$n2 entry] set enable_pause_ 1
-    [$n2 entry] set pause_threshold_ $pauseThreshold
-    [$n2 entry] set resume_threshold_ $resumeThreshold
+    [$n1 entry] set-buffer-threshold [[$n2 entry] set node_id_] $qlim $buffer_threshold
 }
 
 Class TCP_pair

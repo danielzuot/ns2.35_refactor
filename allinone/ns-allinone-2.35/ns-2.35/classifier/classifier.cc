@@ -276,6 +276,14 @@ int Classifier::command(int argc, const char*const* argv)
 				return TCL_ERROR;
 			return TCL_OK;
 		}
+		/* dzuo: setting the PFC thresholds of the input queues
+		 * $classifier set-buffer-threshold $neighbor_node_id_ $qlim $buffer-threshold
+		*/
+		if (strcmp(argv[1], "set-buffer-threshold") == 0) {
+			pause_thresholds_[argv[2]] = argv[3] - argv[4];
+			resume_thresholds_[argv[2]] = argv[3] - argv[4];
+			return TCL_OK;
+		}
 	} else if (argc == 4) {
 		/*
 		 * $classifier install $slot $node

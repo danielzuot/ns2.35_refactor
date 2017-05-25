@@ -204,8 +204,11 @@ for {set i 0} {$i < $S} {incr i} {
     $ns simplex-link $s($i) $n($j) [set link_rate]Gb [expr $host_delay + $mean_link_delay] $switchAlg
     $ns simplex-link $n($j) $s($i) [set link_rate]Gb [expr $host_delay + $mean_link_delay] $switchAlg
 
+
     if {$pfc_enabled_ == 1} {
-        attach-classifiers $ns $s($i) $n($j) $pause_threshold_ $resume_threshold_
+        set buffer_threshold [expr [expr 2 * $pktSize + $link_rate * [expr $host_delay + $mean_link_delay]] / $pktSize]
+        puts "server-TOR buffer_threshold: $buffer_threshold"
+        attach-classifiers $ns $s($i) $n($j) $queueSize $buffer_threshold
     }
     #if {$i == 0} {
     #    set flowmon [$ns makeflowmon Fid]
@@ -222,11 +225,13 @@ for {set i 0} {$i < $S} {incr i} {
 
 for {set i 0} {$i < $topology_tors} {incr i} {
     for {set j 0} {$j < $topology_spines} {incr j} {
-	$ns duplex-link $n($i) $a($j) [set UCap]Gb $mean_link_delay $switchAlg	
-	$ns duplex-link-op $n($i) $a($j) queuePos 0.25
+    	$ns duplex-link $n($i) $a($j) [set UCap]Gb $mean_link_delay $switchAlg	
+    	$ns duplex-link-op $n($i) $a($j) queuePos 0.25
     }
     if {$pfc_enabled_ == 1} {
-        attach-classifiers $ns $n($i) $a($j) $pause_threshold_ $resume_threshold_
+        set buffer_threshold [expr [expr 2 * $pktSize + $UCap * $mean_link_delay] / $pktSize]
+        puts "TOR-spine buffer_threshold: $buffer_threshold"
+        attach-classifiers $ns $s($i) $n($j) $queueSize $buffer_threshold
     }
 }
 
