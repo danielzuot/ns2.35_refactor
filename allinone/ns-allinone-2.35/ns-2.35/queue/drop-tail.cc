@@ -93,9 +93,12 @@ void DropTail::enque(Packet* p)
     //dzuo
     if (pause_enabled_){
         if (hdr_cmn::access(p)->ptype() == PT_PAUSE) {
+            printf("at %f: enqueing a pause packet",
+                Scheduler::instance().clock());
+            printf("contains_pause_ should be 0, is %d",
+                contains_pause_);
             /* even if queue is already full, just need to enque and set contains_pause_ */
             q_->enque(p);
-            assert(contains_pause_ == 0);
             contains_pause_ = 1;
             return;
         }
@@ -200,6 +203,8 @@ Packet* DropTail::deque()
     if (pause_enabled_) {
         if (contains_pause_) {
             /* need to find and deque the pause packet */ 
+            printf("at %f: need to find and deque a pause packet",
+                Scheduler::instance().clock());
             q_->resetIterator();
             Packet *p = q_->getNext();
             assert(p != 0);
@@ -215,6 +220,8 @@ Packet* DropTail::deque()
                 // there should have been a pause_pkt in the queue
                 assert(false);
             }
+            printf("at %f: found a pause packet and dequeing it",
+                Scheduler::instance().clock());
             q_->remove(p);
             contains_pause_ = 0;
             if (classifier_ != nullptr) classifier_->deque_callback(p);

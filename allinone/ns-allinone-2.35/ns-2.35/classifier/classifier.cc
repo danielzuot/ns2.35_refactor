@@ -276,14 +276,6 @@ int Classifier::command(int argc, const char*const* argv)
 				return TCL_ERROR;
 			return TCL_OK;
 		}
-		/* dzuo: setting the PFC thresholds of the input queues
-		 * $classifier set-buffer-threshold $neighbor_node_id_ $qlim $buffer-threshold
-		*/
-		if (strcmp(argv[1], "set-buffer-threshold") == 0) {
-			pause_thresholds_[argv[2]] = argv[3] - argv[4];
-			resume_thresholds_[argv[2]] = argv[3] - argv[4];
-			return TCL_OK;
-		}
 	} else if (argc == 4) {
 		/*
 		 * $classifier install $slot $node
@@ -293,6 +285,18 @@ int Classifier::command(int argc, const char*const* argv)
 			NsObject* node = (NsObject*)TclObject::lookup(argv[3]);
 			install(slot, node);
 			return (TCL_OK);
+		}
+	} else if (argc == 5) {
+		/* dzuo: setting the PFC thresholds of the input queues
+		 * $classifier set-buffer-threshold $neighbor_node_id_ $qlim $buffer-threshold
+		*/
+		if (strcmp(argv[1], "set-buffer-threshold") == 0) {
+			int neighbor_node_id_ = atoi(argv[2]);
+			int qlim = atoi(argv[3]);
+			int buffer_threshold = atoi(argv[4]);
+			pause_thresholds_[neighbor_node_id_] = qlim - buffer_threshold;
+			resume_thresholds_[neighbor_node_id_] = qlim - buffer_threshold;
+			return TCL_OK;
 		}
 	}
 	return (NsObject::command(argc, argv));

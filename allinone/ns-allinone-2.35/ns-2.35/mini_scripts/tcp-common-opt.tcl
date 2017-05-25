@@ -11,11 +11,13 @@ proc attach-classifiers {ns n1 n2 qlim buffer_threshold} {
     $fwd_queue attach-classifier [$n1 entry]
     [$n1 entry] set enable_pause_ 1
     [$n2 entry] set-buffer-threshold [[$n1 entry] set node_id_] $qlim $buffer_threshold
+    # [$n2 entry] set-buffer-threshold 36 $qlim $buffer_threshold
 
     set bwd_queue [[$ns link $n2 $n1] queue]
     $bwd_queue attach-classifier [$n2 entry]
     [$n2 entry] set enable_pause_ 1
     [$n1 entry] set-buffer-threshold [[$n2 entry] set node_id_] $qlim $buffer_threshold
+    # [$n1 entry] set-buffer-threshold 36 $qlim $buffer_threshold
 }
 
 Class TCP_pair
@@ -357,7 +359,7 @@ Agent_Aggr_pair instproc setup {snode dnode tbflist tbfindex gid nr init_fid age
 #All Agent_pairs have the same gid,
 #and each of them has its own flow id: init_fid + [0 .. nr-1]
     #global next_fid
-
+    puts "here"
     $self instvar apair     ;# array of Agent_pair
     $self instvar group_id  ;# group id of this group (given)
     $self instvar nr_pairs  ;# nr of pairs in this group (given)

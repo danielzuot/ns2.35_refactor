@@ -95,30 +95,33 @@ void DestHashClassifier::deque_callback(Packet* p) {
 		if (hdr_cmn::access(p)->ptype() == PT_PAUSE){
 			/* if this is a pause packet, don't account for it */
 			assert(hdr_ip::access(p)->saddr() == node_id_);
-			hdr_cmn::access(p)->input_port() = node_id_;
 		} else {
 			const int32_t input_port = hdr_cmn::access(p)->input_port();
-			assert(input_counters_.at(input_port) > 0);
-			input_counters_.at(input_port)--;
-			/* Resume logic */
-			if (input_counters_.at(input_port) < resume_thresholds_[input_port] and
-				is_paused(input_port)) {
-				if (input_port != -1) {
-					auto unpause_pkt = generate_pause_pkt(input_port, PauseAction::RESUME);
-					/* no point sending a pause to an agent */
-					printf("at %f node %d unpausing %d",
-						Scheduler::instance().clock(),
-						node_id_,
-						input_port);
-					int slot = lookup(unpause_pkt);
-					slot_[slot]->recv(unpause_pkt);
-					paused_.at(input_port) = false;
+			printf("at %f node %d dequeing pkt from %d\n",
+				Scheduler::instance().clock(),
+				node_id_,
+				input_port);
+			if (input_port != -1) {
+				input_counters_.at(input_port)--;
+				/* Resume logic */
+				if (resume_thresholds_.at(input_port) > 0){
+					if (input_counters_.at(input_port) < resume_thresholds_.at(input_port) and
+					is_paused(input_port)) {
+						auto unpause_pkt = generate_pause_pkt(input_port, PauseAction::RESUME);
+						printf("at %f node %d unpausing %d",
+							Scheduler::instance().clock(),
+							node_id_,
+							input_port);
+						int slot = lookup(unpause_pkt);
+						slot_[slot]->recv(unpause_pkt);
+						paused_.at(input_port) = false;
+						
+					}
 				}
-			}
-
-			/* change input_port() and forward onward */
-			hdr_cmn::access(p)->input_port() = node_id_;
+			}	
 		}
+		/* either way, change input_port() and forward onward */
+		hdr_cmn::access(p)->input_port() = node_id_;
 	}
 }
 
@@ -218,27 +221,29 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 	} else {
 		/* Input accounting for pause */
 		const int32_t input_port = hdr_cmn::access(p)->input_port();
-		input_counters_[input_port]++;
-		printf("at %f node %d received pkt from %d, input_counters_[input_port]=%d\n",
-					Scheduler::instance().clock(),
-					node_id_,
-					input_port,
-					input_counters_[input_port]);
-		if (input_counters_[input_port] > pause_thresholds_[input_port] and
-			(not is_paused(input_port))) {
-			if (input_port != -1) {
-				auto pause_pkt = generate_pause_pkt(input_port, PauseAction::PAUSE);
-				/* No point sending a pause to an agent */
-				printf("at %f node %d sending pause to %d because input_counters_[input_port]=%d and pause_threshold_=%d\n",
-					Scheduler::instance().clock(),
-					node_id_,
-					input_port,
-					input_counters_[input_port],
-					pause_thresholds_[input_port]);
-				int slot = lookup(pause_pkt);
-				slot_[slot]->recv(pause_pkt);
-				paused_[input_port] = true;
-				pause_count_++;
+		if (input_port != -1){
+			input_counters_[input_port]++;
+			printf("at %f node %d received pkt from %d, input_counters_[input_port]=%d\n",
+						Scheduler::instance().clock(),
+						node_id_,
+						input_port,
+						input_counters_[input_port]);
+			if (pause_thresholds_.at(input_port) > 0) {
+				if (input_counters_.at(input_port) > pause_thresholds_.at(input_port) and
+				(not is_paused(input_port))) {
+					auto pause_pkt = generate_pause_pkt(input_port, PauseAction::PAUSE);
+					/* No point sending a pause to an agent */
+					printf("at %f node %d sending pause to %d because input_counters_[input_port]=%d and pause_threshold_=%d\n",
+						Scheduler::instance().clock(),
+						node_id_,
+						input_port,
+						input_counters_[input_port],
+						pause_thresholds_.at(input_port));
+					int slot = lookup(pause_pkt);
+					slot_[slot]->recv(pause_pkt);
+					paused_[input_port] = true;
+					// pause_count_++;
+				}
 			}
 		}
 	}

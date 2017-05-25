@@ -206,8 +206,7 @@ for {set i 0} {$i < $S} {incr i} {
 
 
     if {$pfc_enabled_ == 1} {
-        set buffer_threshold [expr [expr 2 * $pktSize + $link_rate * [expr $host_delay + $mean_link_delay]] / $pktSize]
-        puts "server-TOR buffer_threshold: $buffer_threshold"
+        set buffer_threshold [expr [expr 2 * $pktSize + 1000000000 * $link_rate * [expr $host_delay + $mean_link_delay]] / $pktSize]
         attach-classifiers $ns $s($i) $n($j) $queueSize $buffer_threshold
     }
     #if {$i == 0} {
@@ -227,11 +226,11 @@ for {set i 0} {$i < $topology_tors} {incr i} {
     for {set j 0} {$j < $topology_spines} {incr j} {
     	$ns duplex-link $n($i) $a($j) [set UCap]Gb $mean_link_delay $switchAlg	
     	$ns duplex-link-op $n($i) $a($j) queuePos 0.25
-    }
-    if {$pfc_enabled_ == 1} {
-        set buffer_threshold [expr [expr 2 * $pktSize + $UCap * $mean_link_delay] / $pktSize]
-        puts "TOR-spine buffer_threshold: $buffer_threshold"
-        attach-classifiers $ns $s($i) $n($j) $queueSize $buffer_threshold
+
+        if {$pfc_enabled_ == 1} {
+            set buffer_threshold [expr [expr 2 * $pktSize + 1000000000 * $UCap * $mean_link_delay] / $pktSize]
+            attach-classifiers $ns $n($i) $a($j) $queueSize $buffer_threshold
+        }
     }
 }
 
@@ -250,20 +249,20 @@ set init_fid 0
 set tbf 0
 for {set j 0} {$j < $S } {incr j} {
     for {set i 0} {$i < $S } {incr i} {
-	if {$i != $j} {
-	    set agtagr($i,$j) [new Agent_Aggr_pair]
-	    $agtagr($i,$j) setup $s($i) $s($j) [array get tbf] 0 "$i $j" $connections_per_pair $init_fid "TCP_pair"
-	    $agtagr($i,$j) attach-logfile $flowlog
+    	if {$i != $j} {
+    	    set agtagr($i,$j) [new Agent_Aggr_pair]
+    	    $agtagr($i,$j) setup $s($i) $s($j) [array get tbf] 0 "$i $j" $connections_per_pair $init_fid "TCP_pair"
+    	    $agtagr($i,$j) attach-logfile $flowlog
 
-	    puts -nonewline "($i,$j) "
+    	    puts -nonewline "($i,$j) "
 
-	    $agtagr($i,$j) set_PCarrival_process  [expr $lambda/($S - 1)] "CDF_search.tcl" [expr 17*$i+1244*$j] [expr 33*$i+4369*$j]
-   
-	    $ns at 0.1 "$agtagr($i,$j) warmup 0.5 5"
-	    $ns at 1 "$agtagr($i,$j) init_schedule"
-	    
-	    set init_fid [expr $init_fid + $connections_per_pair];
-	}
+    	    $agtagr($i,$j) set_PCarrival_process  [expr $lambda/($S - 1)] "CDF_search.tcl" [expr 17*$i+1244*$j] [expr 33*$i+4369*$j]
+       
+    	    $ns at 0.1 "$agtagr($i,$j) warmup 0.5 5"
+    	    $ns at 1 "$agtagr($i,$j) init_schedule"
+    	    
+    	    set init_fid [expr $init_fid + $connections_per_pair];
+    	}
     }
 }
 

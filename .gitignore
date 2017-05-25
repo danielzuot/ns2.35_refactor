@@ -10,3 +10,4 @@ logs/*
 *.tar.gz
 *.P
 *.pb.h
+allinone/ns-allinone-2.35/ns-2.35/gen

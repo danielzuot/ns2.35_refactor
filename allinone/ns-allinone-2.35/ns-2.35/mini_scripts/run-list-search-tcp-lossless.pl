@@ -20,14 +20,14 @@ $enableMultiPath = 1;
 $DCTCP_g = 1.0/16.0;
 @min_rto = (0.0002);
 
-$switchAlg = "RED";
+$switchAlg = "DropTail";
 @DCTCP_K = (10000);  # set this to very large value to get TCPDroptail
 @drop_prio_ = ("false");
 @deque_prio_ = ("false");
 @prio_scheme_ = (2);
 @prob_mode_ = (0);
 @keep_order_ = ("false");
-@pfc_enabled_ = 1;
+$pfc_enabled_ = 1;
 
 @topology_spt = (8); #server per tor
 @topology_tors = (5);
