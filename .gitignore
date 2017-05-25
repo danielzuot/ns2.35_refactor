@@ -10,4 +10,4 @@ logs/*
 *.tar.gz
 *.P
 *.pb.h
-**/gen
+gen/
