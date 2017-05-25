@@ -11,3 +11,5 @@ logs/*
 *.P
 *.pb.h
 gen/
+ns
+nstk

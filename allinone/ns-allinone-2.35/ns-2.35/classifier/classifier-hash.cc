@@ -104,7 +104,7 @@ void DestHashClassifier::deque_callback(Packet* p) {
 			if (input_port != -1) {
 				input_counters_.at(input_port)--;
 				/* Resume logic */
-				if (resume_thresholds_.at(input_port) > 0){
+				if (resume_thresholds_.count(input_port) == 1){
 					if (input_counters_.at(input_port) < resume_thresholds_.at(input_port) and
 					is_paused(input_port)) {
 						auto unpause_pkt = generate_pause_pkt(input_port, PauseAction::RESUME);
@@ -228,7 +228,7 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 						node_id_,
 						input_port,
 						input_counters_[input_port]);
-			if (pause_thresholds_.at(input_port) > 0) {
+			if (pause_thresholds_.count(input_port) == 1) {
 				if (input_counters_.at(input_port) > pause_thresholds_.at(input_port) and
 				(not is_paused(input_port))) {
 					auto pause_pkt = generate_pause_pkt(input_port, PauseAction::PAUSE);
