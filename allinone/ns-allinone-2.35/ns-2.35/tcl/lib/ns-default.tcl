@@ -111,8 +111,9 @@ Queue/DropTail/PriQueue set Prefer_Routing_Protocols    1
 
 # Shuang : Priority drop
 Queue/DropTail set drop_prio_ false
-Queue/DropTail set dequeue_prio_ false
+Queue/DropTail set deque_prio_ false
 Queue/DropTail set keep_order_ false
+Queue/DropTail set pause_enabled_ false
 
 # special cmu implemented priority queue used by DSR
 CMUPriQueue set qlen_logthresh_ 10
@@ -204,6 +205,8 @@ Queue/RED set pq_thresh_ 0
 #Shuang: priority dropping/deque extensions
 Queue/RED set drop_prio_ 0
 Queue/RED set deque_prio_ 0
+#dzuo: enabling pfc 
+Queue/RED set pause_enabled_ 0
 
 Queue/RED/RIO set bytes_ false
 Queue/RED/RIO set queue_in_bytes_ false

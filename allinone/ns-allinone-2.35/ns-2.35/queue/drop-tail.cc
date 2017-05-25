@@ -90,20 +90,31 @@ void DropTail::enque(Packet* p)
 	}
 
     //printf("qlim_ = %d, qib_ = %d, mean_pktsize_ = %d\n", qlim_, qib_, mean_pktsize_);
+    //dzuo
+    if (pause_enabled_){
+        if (hdr_cmn::access(p)->ptype() == PT_PAUSE) {
+            /* even if queue is already full, just need to enque and set contains_pause_ */
+            q_->enque(p);
+            assert(contains_pause_ == 0);
+            contains_pause_ = 1;
+            return;
+        }
+    }
 
 	int qlimBytes = qlim_ * mean_pktsize_;
 	if ((!qib_ && (q_->length() + 1) >= qlim_) ||
   	(qib_ && (q_->byteLength() + hdr_cmn::access(p)->size()) >= qlimBytes)){
 		// if the queue would overflow if we added this packet...
-		if (drop_front_) { /* remove from head of queue */
-			q_->enque(p);
-			Packet *pp = q_->deque();
-			drop(pp);
-		} 
+        if (drop_front_) { /* remove from head of queue */
+            q_->enque(p);
+            Packet *pp = q_->deque();
+            drop(pp);
+        } 
         else if (drop_prio_) {
             Packet *max_pp = p;
             int max_prio = 0;
 
+            // dzuo: do i need to ensure that a pause pkt is never dropped?
             q_->enque(p);
             q_->resetIterator();
             for (Packet *pp = q_->getNext(); pp != 0; pp = q_->getNext()) {
@@ -151,8 +162,8 @@ void DropTail::enque(Packet* p)
             /* bunch of stuff about FlowKey and dropping something else instead*/
             drop(max_pp);
         } else {
-			drop(p);
-		}
+            drop(p);
+        }
 	} else {
 		q_->enque(p);
 	}
@@ -184,6 +195,33 @@ Packet* DropTail::deque()
     if (summarystats && &Scheduler::instance() != NULL) {
         Queue::updateStats(qib_?q_->byteLength():q_->length());
     }
+
+    // dzuo
+    if (pause_enabled_) {
+        if (contains_pause_) {
+            /* need to find and deque the pause packet */ 
+            q_->resetIterator();
+            Packet *p = q_->getNext();
+            assert(p != 0);
+            if (hdr_cmn::access(p)->ptype() != PT_PAUSE) {
+                for (Packet *pp = q_->getNext(); pp != 0; pp = q_->getNext()) {
+                    //check if pp is the pause_pkt
+                    if (hdr_cmn::access(pp)->ptype() == PT_PAUSE) {
+                        p = pp;
+                    }
+                }
+            }
+            if (hdr_cmn::access(p)->ptype() != PT_PAUSE) {
+                // there should have been a pause_pkt in the queue
+                assert(false);
+            }
+            q_->remove(p);
+            contains_pause_ = 0;
+            if (classifier_ != nullptr) classifier_->deque_callback(p);
+            return p;
+        }
+    }
+
     //printf("drop_smart_ = %d, sq_limit = %d\n", drop_smart_, sq_limit_);
     /* Shuang: deque the packet with the highest priority */
     if (deque_prio_) {
@@ -221,6 +259,8 @@ Packet* DropTail::deque()
         /* if p->flowid() == 1, do some stuff*/
 
         q_->remove(p);
+        /* dzuo: if pause is enabled invoke deque callback to maintain packet counts */
+        if (classifier_ != nullptr) classifier_->deque_callback(p);
         return p;
     } else {
         if (drop_smart_) {
@@ -260,9 +300,12 @@ Packet* DropTail::deque()
                     //printf("%s removed front sig = %d, no longer full %d %d\n", this->name(), temp, sq_counts_.size(), sq_queue_.size());
                 }
             }
+            /* dzuo: if pause is enabled invoke deque callback to maintain packet counts */
+            if (classifier_ != nullptr) classifier_->deque_callback(p);
             return p;
         } else {
             auto ret = q_->deque();
+            /* dzuo: if pause is enabled invoke deque callback to maintain packet counts */
             if (classifier_ != nullptr) classifier_->deque_callback(ret);
 	        return ret;
         }

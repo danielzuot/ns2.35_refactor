@@ -143,6 +143,7 @@ Packet* DestHashClassifier::generate_pause_pkt(const int32_t port_to_pause, cons
 	hdr_pause::fill_in(pause_pkt, pause_durations_vector, enable_vector);
 	hdr_ip::access(pause_pkt)->saddr() = node_id_;
 	hdr_ip::access(pause_pkt)->daddr() = port_to_pause;
+	hdr_ip::access(pause_pkt)->prio() = 10000000000; // dzuo: ensure pause pkts never dropped?
 	assert(hdr_ip::access(pause_pkt)->saddr() != hdr_ip::access(pause_pkt)->daddr());
 	hdr_ip::access(pause_pkt)->ttl() = 32;
 	return pause_pkt;

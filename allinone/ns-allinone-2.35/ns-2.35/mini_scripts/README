@@ -1,0 +1,38 @@
+pFabric ns2 simulations
+------------------------
+
+This directory contains the n2 source code for pFabric and some of the scripts used for 
+the results in the SIGCOMM 2013 paper: "pFabric: Minimal Near-Optimal Datacenter Transport". 
+The ns2 source code is provided as a patch on top of ns-2.34. 
+
+Instructions:
+(1) Download and install ns-2.34. Using the "allinone" package is recommended; for exmaple 
+from here: 
+http://sourceforge.net/projects/nsnam/files/allinone/ns-allinone-2.34/
+
+(2) Copy the patch to the ns-2.34 directory, and apply the patch:
+[ns-2.34]$ git apply pfabric.patch
+
+(3) Build ns:
+[ns-2.34]$ make clean
+[ns-2.34]$ make
+
+(4) Run desired scenario using one of the following scripts:
+- run-list-search-pfabric.pl for pFabric (web search workload)
+- run-list-search-dctcp.pl for DCTCP (web search workload)
+- run-list-search-tcp.pl for TCP-DropTail (web search workload)
+
+Note: Please change the username and the top directory path in lines 43/44 of the above scripts 
+before running. Please also note that the scripts expect the ns-allinone-2.34 directory to be 
+directly under the top directory.
+
+Each of the above scripts will run 8 simulations in parallel, corresponding to different levels 
+of load (0.1, ..., 0.8). The number of simulations to run in parallel can be changed using the 
+$numcores variable. The script can also be used to run simulations on a cluster of servers with 
+some hand holding. The ip addresses of the worker nodes need to be provided in @server_list. 
+Each of the workers must have ns2.34 installed under the same top directory as the master node.  
+
+(5) The output for each script is placed in a log directory under the top directory. Each of these 
+consists of 8 sub-directories, one per load value. For each scenario, the flow.tr file has the flow 
+completion time results. This file has 5 columns, which are number of packets, flow completion time, 
+number of timeouts, src id and dst id.

@@ -70,7 +70,7 @@ typedef struct flowkey {
  */
 class DropTail : public Queue {
   public:
-	DropTail() { 
+	DropTail() : contains_pause_(0) { 
 		q_ = new PacketQueue; 
 		pq_ = q_;
 		bind_bool("drop_front_", &drop_front_);
@@ -78,6 +78,7 @@ class DropTail : public Queue {
         bind_bool("drop_prio_", &drop_prio_);
         bind_bool("deque_prio_", &deque_prio_);
         bind_bool("keep_order_", &keep_order_);
+        bind_bool("pause_enabled_", &pause_enabled_);  //dzuo
 		bind_bool("summarystats_", &summarystats);
 		bind_bool("queue_in_bytes_", &qib_);  // boolean: q in bytes?
 		bind("mean_pktsize_", &mean_pktsize_);
@@ -106,6 +107,9 @@ class DropTail : public Queue {
     int drop_prio_;
     int deque_prio_;
     int keep_order_;
+    //dzuo: for enabling pfc
+    int pause_enabled_;
+    int contains_pause_;
 
     unsigned int sq_limit_;
     unordered_map<size_t, int> sq_counts_;
