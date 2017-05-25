@@ -10,7 +10,7 @@ set ns [new Simulator]
 set sim_start [clock seconds]
 puts "Host: [exec uname -a]"
 
-if {$argc != 27} {
+if {$argc != 28} {
     puts "wrong number of arguments $argc"
     exit 0
 }
@@ -41,13 +41,14 @@ set prio_scheme_ [lindex $argv 18]
 set deque_prio_ [lindex $argv 19]
 set prob_cap_ [lindex $argv 20]
 set keep_order_ [lindex $argv 21]
+set pfc_enabled_ [lindex $argv 22]
 #### topology
-set topology_spt [lindex $argv 22]
-set topology_tors [lindex $argv 23]
-set topology_spines [lindex $argv 24]
-set topology_x [lindex $argv 25]
+set topology_spt [lindex $argv 23]
+set topology_tors [lindex $argv 24]
+set topology_spines [lindex $argv 25]
+set topology_x [lindex $argv 26]
 #### NAM
-set enableNAM [lindex $argv 26]
+set enableNAM [lindex $argv 27]
 
 #### Packet size is in bytes.
 set pktSize 1460
@@ -73,6 +74,7 @@ puts "DCTCP_g $DCTCP_g"
 puts "HR-Timer $enableHRTimer"
 puts "slow-start Restart $slowstartrestart"
 puts "switch algorithm $switchAlg"
+puts "pfc_enabled_ $pfc_enabled_"
 puts "DCTCP_K_ $DCTCP_K"
 puts "pktSize(payload) $pktSize Bytes"
 puts "pktSize(include header) [expr $pktSize + 40] Bytes"
@@ -201,6 +203,10 @@ for {set i 0} {$i < $S} {incr i} {
     #set tmpr [expr $link_rate * 1.1]
     $ns simplex-link $s($i) $n($j) [set link_rate]Gb [expr $host_delay + $mean_link_delay] $switchAlg
     $ns simplex-link $n($j) $s($i) [set link_rate]Gb [expr $host_delay + $mean_link_delay] $switchAlg
+
+    if {$pfc_enabled_ == 1} {
+        attach-classifiers $ns $s($i) $n($j) $pause_threshold_ $resume_threshold_
+    }
     #if {$i == 0} {
     #    set flowmon [$ns makeflowmon Fid]
     #    $ns attach-fmon [$ns link $n($j) $s($i)] $flowmon
@@ -218,6 +224,9 @@ for {set i 0} {$i < $topology_tors} {incr i} {
     for {set j 0} {$j < $topology_spines} {incr j} {
 	$ns duplex-link $n($i) $a($j) [set UCap]Gb $mean_link_delay $switchAlg	
 	$ns duplex-link-op $n($i) $a($j) queuePos 0.25
+    }
+    if {$pfc_enabled_ == 1} {
+        attach-classifiers $ns $n($i) $a($j) $pause_threshold_ $resume_threshold_
     }
 }
 
