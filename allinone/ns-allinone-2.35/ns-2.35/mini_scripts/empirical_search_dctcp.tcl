@@ -126,7 +126,12 @@ Agent/TCP set windowInit_ 12
 Agent/TCP set maxcwnd_ 149
 #Agent/TCP/FullTcp set prob_cap_ $prob_cap_;
 Agent/TCP set rtxcur_init_ $min_rto;
-set myAgent "Agent/TCP/FullTcp/Sack";
+if {$pfc_enabled_ == 1} {
+    set myAgent "Agent/TCP/FullTcp/Sack/LosslessTCP"
+} else {
+    set myAgent "Agent/TCP/FullTcp/Sack";
+}
+
 
 ################# Switch Options ######################
 

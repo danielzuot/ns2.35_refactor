@@ -97,10 +97,10 @@ void DestHashClassifier::deque_callback(Packet* p) {
 			assert(hdr_ip::access(p)->saddr() == node_id_);
 		} else {
 			const int32_t input_port = hdr_cmn::access(p)->input_port();
-			printf("at %f node %d dequeing pkt from %d\n",
-				Scheduler::instance().clock(),
-				node_id_,
-				input_port);
+			// printf("at %f node %d dequeing pkt from %d\n",
+			// 	Scheduler::instance().clock(),
+			// 	node_id_,
+			// 	input_port);
 			if (input_port != -1) {
 				input_counters_.at(input_port)--;
 				/* Resume logic */
@@ -108,7 +108,7 @@ void DestHashClassifier::deque_callback(Packet* p) {
 					if (input_counters_.at(input_port) < resume_thresholds_.at(input_port) and
 					is_paused(input_port)) {
 						auto unpause_pkt = generate_pause_pkt(input_port, PauseAction::RESUME);
-						printf("at %f node %d unpausing %d",
+						printf("at %f node %d unpausing %d\n",
 							Scheduler::instance().clock(),
 							node_id_,
 							input_port);
@@ -223,11 +223,11 @@ void DestHashClassifier::recv(Packet* p, Handler* h) {
 		const int32_t input_port = hdr_cmn::access(p)->input_port();
 		if (input_port != -1){
 			input_counters_[input_port]++;
-			printf("at %f node %d received pkt from %d, input_counters_[input_port]=%d\n",
-						Scheduler::instance().clock(),
-						node_id_,
-						input_port,
-						input_counters_[input_port]);
+			// printf("at %f node %d received pkt from %d, input_counters_[input_port]=%d\n",
+			// 			Scheduler::instance().clock(),
+			// 			node_id_,
+			// 			input_port,
+			// 			input_counters_[input_port]);
 			if (pause_thresholds_.count(input_port) == 1) {
 				if (input_counters_.at(input_port) > pause_thresholds_.at(input_port) and
 				(not is_paused(input_port))) {

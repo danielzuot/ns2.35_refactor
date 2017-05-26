@@ -118,6 +118,14 @@ public:
     }
 } class_dd_full;
 
+static class LosslessTcpClass : public TclClass {
+public:
+    LosslessTcpClass() : TclClass("Agent/TCP/FullTcp/Sack/LosslessTCP") {}
+    TclObject* create(int, const char*const*) {
+        return (new LosslessTcpAgent());
+    }
+} class_lossless_full;
+
 /*
  * Delayed-binding variable linkage
  */
@@ -3644,4 +3652,18 @@ DDTcpAgent::need_send() {
             return 0;
     }
     return SackFullTcpAgent::need_send();
+}
+
+
+/* never retransmit, just update cwnd_ */
+void
+LosslessTcpAgent::timeout_action() {
+    int t_seqno = t_seqno_;
+    SackFullTcpAgent::timeout_action();
+
+    t_seqno_ = t_seqno;
+    ecnhat_recalc_seq = t_seqno_;
+    ecnhat_maxseq = ecnhat_recalc_seq;
+    dctcp_alpha_update_seq = t_seqno_;
+    dctcp_maxseq = dctcp_alpha_update_seq;
 }

@@ -295,7 +295,7 @@ int Classifier::command(int argc, const char*const* argv)
 			int qlim = atoi(argv[3]);
 			int buffer_threshold = atoi(argv[4]);
 			pause_thresholds_[neighbor_node_id_] = qlim - buffer_threshold;
-			resume_thresholds_[neighbor_node_id_] = qlim - buffer_threshold;
+			resume_thresholds_[neighbor_node_id_] = buffer_threshold;
 			return TCL_OK;
 		}
 	}

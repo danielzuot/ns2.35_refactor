@@ -348,4 +348,9 @@ class DDTcpAgent : public SackFullTcpAgent {
     virtual int need_send();        // send ACK/win-update now?
 };
 
+class LosslessTcpAgent : public SackFullTcpAgent {
+public:
+    virtual void timeout_action(); /* dont retransmit */
+};
+
 #endif
